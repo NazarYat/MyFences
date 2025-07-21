@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="MyFences" Language="1033" Version="1.0.0.0"
+			 Manufacturer="Nicancor" UpgradeCode="CBBD31D2-3C5E-432E-90BA-887FB42AA704">
+		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate />
+
+		<!-- Enable UI with destination folder selection -->
+		<UIRef Id="WixUI_InstallDir" />
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+		<Feature Id="ProductFeature" Title="MyFences Installation" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<!-- Directory structure -->
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="MyFences" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<!-- Files and Registry -->
+	<Fragment>
+		<DirectoryRef Id="INSTALLFOLDER">
+			<!-- Component for the EXE -->
+			<Component Id="MainExecutableComponent" Guid="*">
+				<File Id="MyFencesExe" Source="publish/MyFences.exe" KeyPath="yes" />
+			</Component>
+
+			<!-- Component for the context menu -->
+			<Component Id="DesktopContextMenuComponent" Guid="*">
+				<RegistryKey Root="HKCR" Key="DesktopBackground\shell\OpenWithMyApp" Action="createAndRemoveOnUninstall">
+					<RegistryValue Name="MUIVerb" Value="Create new fence" Type="string" />
+					<RegistryKey Key="command">
+						<RegistryValue Value="&quot;[INSTALLFOLDER]MyFences.exe&quot; true" Type="string" />
+					</RegistryKey>
+				</RegistryKey>
+			</Component>
+		</DirectoryRef>
+
+		<!-- Grouping components -->
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<ComponentRef Id="MainExecutableComponent" />
+			<ComponentRef Id="ContextMenuComponent" />
+		</ComponentGroup>
+	</Fragment>
+</Wix>
+

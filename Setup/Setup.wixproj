@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="PublishMyFences" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- ===== Project Metadata ===== -->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>3.10</ProductVersion>
+    <ProjectGuid>1d97aea0-c68e-4b1d-a8fe-0ee4d951e3f5</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>Setup</OutputName>
+    <OutputType>Package</OutputType>
+  </PropertyGroup>
+  <!-- ===== Build Paths ===== -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '$(Configuration)|x86' ">
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <SuppressAllWarnings>False</SuppressAllWarnings>
+    <Pedantic>True</Pedantic>
+  </PropertyGroup>
+  <!-- Path to MyFences project -->
+  <PropertyGroup>
+    <MyFencesProjectPath>..\MyFences\MyFences.csproj</MyFencesProjectPath>
+    <PublishDir>$(MSBuildProjectDirectory)\Publish\</PublishDir>
+  </PropertyGroup>
+  <!-- ===== Compile Files ===== -->
+  <ItemGroup>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>WixUIExtension</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+  <!-- ===== Import WiX Targets ===== -->
+  <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
+  <!-- ===== Fail Build If WiX Missing ===== -->
+  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
+    <Error Text="The WiX Toolset v3.11 build tools must be installed to build this project. To download the WiX Toolset, see https://wixtoolset.org/releases/v3.11/stable" />
+  </Target>
+  <!-- ===== Automatically Publish MyFences Before Building Setup ===== -->
+  <Target Name="PublishMyFences">
+    <Message Text="Publishing MyFences project..." Importance="high" />
+    <Exec Command="dotnet publish &quot;$(MyFencesProjectPath)&quot; -c Release -o &quot;$(PublishDir)&quot;" />
+  </Target>
+</Project>
