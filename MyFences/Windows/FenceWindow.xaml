@@ -9,40 +9,39 @@
         Background="Transparent"
         AllowsTransparency="True"
         Loaded="FenceWindow_Loaded">
-    <Grid Background="#100063FF">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Grid Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="#330059FF" MouseLeftButtonDown="TopBar_MouseLeftButtonDown">
-            <TextBlock Text="My App"
-                        Foreground="White"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"/>
-            <Button Content="X" HorizontalAlignment="Right"
-                    Width="20"
-                    Click="Close_Click"
-                    Background="Transparent" BorderBrush="{x:Null}" Foreground="White"/>
-        </Grid>
+            <Grid Grid.Row="0" Background="#330059FF" MouseLeftButtonDown="TopBar_MouseLeftButtonDown">
+                <TextBlock Text="My App"
+                            Foreground="White"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"/>
+            </Grid>
 
-        <Grid Grid.Row="1">
-            <ListView ItemsSource="{Binding Items}"
-                      Background="Transparent"
-                      BorderBrush="#00ABADB3"
-                      BorderThickness="0,0,0,0"
-                      AllowDrop="True"
-                      Drop="ListView_Drop"
-                      DragOver="ListView_DragOver">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="2">
-                            <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <Grid Grid.Row="1">
+                <ListView ItemsSource="{Binding Items}"
+                          Background="Transparent"
+                          BorderBrush="#00ABADB3"
+                          BorderThickness="0,0,0,0"
+                          AllowDrop="True"
+                          Drop="ListView_Drop"
+                          DragOver="ListView_DragOver"
+                          PreviewKeyDown="ListView_PreviewKeyDown"
+                          x:Name="FilesListView"
+                          SelectionMode="Extended">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="2">
+                                <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </Grid>
-    </Grid>
 </Window>

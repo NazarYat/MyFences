@@ -1,6 +1,7 @@
 ﻿using MyFences.Models;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 
 namespace MyFences.ViewModels
@@ -92,20 +93,16 @@ namespace MyFences.ViewModels
             _app.SaveData();
         }
 
-        public void RemoveFile(string path)
+        public void RemoveFile(ItemViewModel item)
         {
-            if (!Fence.Items.Contains(path))
+            if (!Fence.Items.Contains(item.Path))
             {
                 return;
             }
 
-            Fence.Items.Add(path);
+            Fence.Items.Remove(item.Path);
 
-            var newVm = CreateItemViewModel(path);
-
-            if (newVm == null) return;
-
-            Items.Add(newVm);
+            Items.Remove(item);
 
             NotifyOfPropertyChanged(nameof(Items));
 
