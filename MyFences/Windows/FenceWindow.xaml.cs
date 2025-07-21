@@ -50,6 +50,7 @@ namespace MyFences.Windows
 
             int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+            SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
             EnableBlur();
         }
@@ -58,7 +59,7 @@ namespace MyFences.Windows
             var windowHelper = new WindowInteropHelper(this);
             var accent = new AccentPolicy
             {
-                AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND
+                AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND
             };
 
             int accentStructSize = Marshal.SizeOf(accent);
@@ -88,7 +89,10 @@ namespace MyFences.Windows
         private enum AccentState
         {
             ACCENT_DISABLED = 0,
+            ACCENT_ENABLE_GRADIENT = 1,
+            ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
             ACCENT_ENABLE_BLURBEHIND = 3,
+            ACCENT_ENABLE_ACRYLICBLURBEHIND = 4 
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -106,6 +110,15 @@ namespace MyFences.Windows
 
         [DllImport("user32.dll")]
         private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+        private const int SWP_NOSIZE = 0x0001;
+        private const int SWP_NOMOVE = 0x0002;
+        private const int SWP_NOACTIVATE = 0x0010;
+        private static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
+            int X, int Y, int cx, int cy, uint uFlags);
 
         private void ListView_DragOver(object sender, DragEventArgs e)
         {

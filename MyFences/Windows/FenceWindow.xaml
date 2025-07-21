@@ -15,7 +15,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Background="#330059FF" MouseLeftButtonDown="TopBar_MouseLeftButtonDown">
+            <Grid Grid.Row="0" Background="#490059FF" MouseLeftButtonDown="TopBar_MouseLeftButtonDown">
                 <TextBlock Text="My App"
                             Foreground="White"
                             VerticalAlignment="Center"
@@ -24,7 +24,7 @@
 
             <Grid Grid.Row="1">
                 <ListView ItemsSource="{Binding Items}"
-                          Background="Transparent"
+                          Background="#2B006CFF"
                           BorderBrush="#00ABADB3"
                           BorderThickness="0,0,0,0"
                           AllowDrop="True"
