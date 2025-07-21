@@ -42,6 +42,6 @@ public partial class App : Application
     }
     public void SaveData()
     {
-        SerializationUtil.SaveToFile("data.json", _appData);
+        //SerializationUtil.SaveToFile("data.json", _appData);
     }
 }

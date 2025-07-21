@@ -18,7 +18,7 @@
                 Top = 50,
                 Items = new List<string>
                 {
-
+                    "C:\\Users\\yatsy\\OneDrive\\Рабочий стол\\SoundPanel.lnk"
                 }
             });
         }

@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace MyFences.ViewModels
 {
-    public class ItemViewModel
+    public class ItemViewModel : ViewModelBase
     {
         public string Name { get; set; } = "";
         public string Path { get; set; } = "";

@@ -1,11 +1,11 @@
 ﻿using MyFences.Models;
-using MyFences.Util;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows;
 
 namespace MyFences.ViewModels
 {
-    public class FenceViewModel
+    public class FenceViewModel : ViewModelBase
     {
         private readonly App _app;
         public Fence Fence { get; set; } = null!;
@@ -16,19 +16,24 @@ namespace MyFences.ViewModels
             _app = app;
             Fence = model;
 
-            CheckFiles();
+            CheckItemsExist();
             LoadItems();
         }
-        private void CheckFiles()
+
+        private void CheckItemsExist()
         {
             if (Fence == null || Fence.Items == null)
                 Fence = new Fence();
 
-            foreach (var item in Fence.Items)
+            // Remove invalid items (files or folders)
+
+            for (int i = Fence.Items.Count - 1; i >= 0; i--)
             {
-                if (!File.Exists(item))
+                var item = Fence.Items[i];
+
+                if (!File.Exists(item) && !Directory.Exists(item))
                 {
-                    Fence.Items.Remove(item);
+                    Fence.Items.RemoveAt(i);
                 }
             }
 
@@ -37,22 +42,74 @@ namespace MyFences.ViewModels
 
         private void LoadItems()
         {
-            var items = Fence.Items.Select(i => CreateItemViewModel(i));
+            Items.Clear();
 
-            Items = new ObservableCollection<ItemViewModel>(items);
+            foreach (var itemPath in Fence.Items)
+            {
+                var itemVM = CreateItemViewModel(itemPath);
+                if (itemVM != null)
+                    Items.Add(itemVM);
+            }
+
+            NotifyOfPropertyChanged(nameof(Items));
         }
-        private ItemViewModel CreateItemViewModel(string itemPath)
-        {
-            if (string.IsNullOrEmpty(itemPath) || !File.Exists(itemPath))
-                return new ItemViewModel();
 
-            var item = new ItemViewModel
+        private ItemViewModel? CreateItemViewModel(string itemPath)
+        {
+            if (string.IsNullOrEmpty(itemPath) || (!File.Exists(itemPath) && !Directory.Exists(itemPath)))
+                return null;
+
+            var isFolder = Directory.Exists(itemPath);
+
+            return new ItemViewModel
             {
                 Path = itemPath,
-                Name = Path.GetFileName(itemPath),
-                Icon = IconHelper.GetIcon(itemPath)
+                Name = isFolder ? new DirectoryInfo(itemPath).Name : Path.GetFileName(itemPath),
+                Icon = IconHelper.GetImageSource(itemPath, isFolder)
             };
-            return item;
+        }
+
+        public void AddFile(string path)
+        {
+            if (!File.Exists(path) && !Directory.Exists(path))
+                return;
+
+            if (Fence.Items.Contains(path))
+            {
+                return;
+            }
+
+            Fence.Items.Add(path);
+
+            var newVm = CreateItemViewModel(path);
+
+            if (newVm == null) return;
+
+            Items.Add(newVm);
+
+            NotifyOfPropertyChanged(nameof(Items));
+
+            _app.SaveData();
+        }
+
+        public void RemoveFile(string path)
+        {
+            if (!Fence.Items.Contains(path))
+            {
+                return;
+            }
+
+            Fence.Items.Add(path);
+
+            var newVm = CreateItemViewModel(path);
+
+            if (newVm == null) return;
+
+            Items.Add(newVm);
+
+            NotifyOfPropertyChanged(nameof(Items));
+
+            _app.SaveData();
         }
     }
 }
