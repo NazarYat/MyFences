@@ -16,7 +16,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        _appData = SerializationUtil.LoadFromFile<ApplicationData>("data.json") ?? new ApplicationData();
+        _appData = SerializationUtil.LoadFromFile<ApplicationData>("data.json") ?? new TestApplicationData();
 
         foreach (var fence in _appData.Fences)
         {
@@ -25,6 +25,8 @@ public partial class App : Application
             var window = new FenceWindow();
 
             window.DataContext = viewModel;
+
+            window.Show();
         }
 
         string[] args = Environment.GetCommandLineArgs();
