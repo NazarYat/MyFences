@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace MyFences.Controls
@@ -56,9 +57,13 @@ namespace MyFences.Controls
             get => (double)GetValue(VerticalSpacingProperty);
             set => SetValue(VerticalSpacingProperty, value);
         }
+        private static bool IsInDesignMode => DesignerProperties.GetIsInDesignMode(new DependencyObject());
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (IsInDesignMode)
+                return base.MeasureOverride(availableSize); // or return fixed size
+
             foreach (UIElement child in InternalChildren)
                 child.Measure(new Size(ItemWidth, ItemHeight));
 

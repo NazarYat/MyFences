@@ -21,6 +21,33 @@
                           ShadowDepth="1.5"
                           Direction="270"
                           Opacity="1" />
+
+        <Style TargetType="ScrollBar" x:Key="CustomVerticalScrollBar" BasedOn="{x:Null}">
+            <Setter Property="Width" Value="5"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="Transparent">
+                            <Track Name="PART_Track" IsDirectionReversed="true">
+                                <Track.Thumb>
+                                    <Thumb Background="#FF6EC5FF"
+                                           BorderThickness="0"
+                                           Margin="1 1 0 5">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Width="5" Background="#FF81A9FF" CornerRadius="3"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Background="#330059FF">
@@ -50,6 +77,9 @@
                         ScrollViewer.CanContentScroll="False"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Stretch">
+                <ListView.Resources>
+                    <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource CustomVerticalScrollBar}" />
+                </ListView.Resources>
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <controls:UniformSpacingWrapPanel 
@@ -94,7 +124,7 @@
                         </Setter>
                     </Style>
                 </ListView.ItemContainerStyle>
-
+                
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel HorizontalAlignment="Center"
