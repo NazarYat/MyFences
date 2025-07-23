@@ -1,16 +1,53 @@
 ﻿using MyFences.Models;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Windows;
 
 namespace MyFences.ViewModels
 {
     public class FenceViewModel : ViewModelBase
     {
+        private readonly string[] _extensionsToHide = new string[] { ".lnk", ".exe" };
         private readonly App _app;
         public Fence Fence { get; set; } = null!;
         public ObservableCollection<ItemViewModel> Items { get; set; } = new ObservableCollection<ItemViewModel>();
+
+        public int ItemsMargin => 2;
+        public int ItemSize => (int)(IconSize * 2.5);
+        public int IconSize
+        {
+            get => Fence.ItemSize;
+            set
+            {
+                if (Fence.ItemSize == value) return;
+
+                Fence.ItemSize = value;
+                NotifyOfPropertyChanged(nameof(ItemSize));
+                _app.SaveData();
+            }
+        }
+
+        private float _gridWidth = 0;
+        public float GridWidth 
+        { 
+            get => _gridWidth;
+            set
+            {
+                if (_gridWidth == value) return;
+                _gridWidth = value;
+                NotifyOfPropertyChanged(nameof(GridWidth));
+            }
+        }
+        private float _gridHeight = 0;
+        public float GridHeight
+        {
+            get => _gridHeight;
+            set
+            {
+                if (_gridHeight == value) return;
+                _gridHeight = value;
+                NotifyOfPropertyChanged(nameof(GridHeight));
+            }
+        }
 
         public FenceViewModel(App app, Fence model)
         {
@@ -60,14 +97,29 @@ namespace MyFences.ViewModels
             if (string.IsNullOrEmpty(itemPath) || (!File.Exists(itemPath) && !Directory.Exists(itemPath)))
                 return null;
 
-            var isFolder = Directory.Exists(itemPath);
 
             return new ItemViewModel
             {
                 Path = itemPath,
-                Name = isFolder ? new DirectoryInfo(itemPath).Name : Path.GetFileName(itemPath),
-                Icon = IconHelper.GetImageSource(itemPath, isFolder)
+                Name = GetItemName(itemPath),
+                Icon = IconHelper.GetHighQualityIcon(itemPath, 256)
             };
+        }
+
+        private string GetItemName(string itemPath)
+        {
+            var isFolder = Directory.Exists(itemPath);
+
+            var t = Path.GetExtension(itemPath).ToLower();
+
+            var r = _extensionsToHide.Contains(t);
+
+            return isFolder ?
+                    new DirectoryInfo(itemPath).Name :
+                    _extensionsToHide.Contains(Path.GetExtension(itemPath).ToLower()) ?
+                        Path.GetFileNameWithoutExtension(itemPath) :
+                        Path.GetFileName(itemPath);
+
         }
 
         public void AddFile(string path)

@@ -16,6 +16,7 @@
                 Height = 150,
                 Left = 50,
                 Top = 50,
+                ItemSize = 32,
                 Items = new List<string>
                 {
                     "C:\\Users\\yatsy\\OneDrive\\Рабочий стол\\SoundPanel.lnk"

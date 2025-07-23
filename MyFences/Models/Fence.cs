@@ -8,5 +8,6 @@
         public float Left { get; set; } = 100;
         public float Top { get; set; } = 100;
         public List<string> Items { get; set; } = new List<string>();
+        public int ItemSize { get; set; } = 50;
     }
 }
