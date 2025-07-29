@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Shell;
 
 namespace MyFences.Windows
@@ -34,6 +35,55 @@ namespace MyFences.Windows
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 this.DragMove(); // Makes the window draggable
+        }
+
+        private DateTime _lastClick = DateTime.Now;
+        private void NameTextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (DateTime.Now - _lastClick < TimeSpan.FromMilliseconds(300))
+            {
+                if (ViewModel != null)
+                {
+                    ViewModel.NameEditing = true;
+                    NameTextBox.Focus();
+                    NameTextBox.CaretIndex = NameTextBox.Text.Length;
+                }
+            }
+            else
+            {
+                _lastClick = DateTime.Now;
+            }
+        }
+
+        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            DependencyObject clickedElement = e.OriginalSource as DependencyObject;
+
+            if (!IsInsideTextBox(clickedElement))
+            {
+                Keyboard.ClearFocus();
+            }
+        }
+
+        private bool IsInsideTextBox(DependencyObject element)
+        {
+            while (element != null)
+            {
+                if (element is TextBox)
+                    return true;
+
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            return false;
+        }
+        private void NameTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.NameEditing = false;
+                ViewModel.Name = NameTextBox.Text;
+            }
         }
 
         private const int GWL_EXSTYLE = -20;
@@ -165,6 +215,17 @@ namespace MyFences.Windows
 
             if (WindowState == WindowState.Maximized)
                 WindowState = WindowState.Normal;
+        }
+
+        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (ViewModel != null)
+                {
+                    ViewModel.NameEditing = false;
+                }
+            }
         }
     }
 }

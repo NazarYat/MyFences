@@ -11,7 +11,6 @@ namespace MyFences.ViewModels
         public Fence Fence { get; set; } = null!;
         public ObservableCollection<ItemViewModel> Items { get; set; } = new ObservableCollection<ItemViewModel>();
 
-        public int ItemsMargin => 2;
         public int ItemSize => (int)(IconSize * 2.5);
         public int IconSize
         {
@@ -21,6 +20,7 @@ namespace MyFences.ViewModels
                 if (Fence.ItemSize == value) return;
 
                 Fence.ItemSize = value;
+                NotifyOfPropertyChanged();
                 NotifyOfPropertyChanged(nameof(ItemSize));
                 _app.SaveData();
             }
@@ -34,7 +34,7 @@ namespace MyFences.ViewModels
             {
                 if (_gridWidth == value) return;
                 _gridWidth = value;
-                NotifyOfPropertyChanged(nameof(GridWidth));
+                NotifyOfPropertyChanged();
             }
         }
         private float _gridHeight = 0;
@@ -45,7 +45,30 @@ namespace MyFences.ViewModels
             {
                 if (_gridHeight == value) return;
                 _gridHeight = value;
-                NotifyOfPropertyChanged(nameof(GridHeight));
+                NotifyOfPropertyChanged();
+            }
+        }
+
+        public string Name
+        {
+            get => Fence.Name;
+            set
+            {
+                if (Fence.Name == value) return;
+                Fence.Name = value;
+                NotifyOfPropertyChanged();
+            }
+        }
+
+        private bool _nameEditing = false;
+        public bool NameEditing
+        {
+            get => _nameEditing;
+            set
+            {
+                if (_nameEditing == value) return;
+                _nameEditing = value;
+                NotifyOfPropertyChanged();
             }
         }
 
