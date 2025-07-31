@@ -179,7 +179,9 @@
                         <StackPanel HorizontalAlignment="Center"
                                     Orientation="Vertical"
                                     Width="{Binding Data.ItemSize, Source={StaticResource Proxy}}"
-                                    Height="{Binding Data.ItemSize, Source={StaticResource Proxy}}">
+                                    Height="{Binding Data.ItemSize, Source={StaticResource Proxy}}"
+                                    MouseDown="StackPanel_MouseDown"
+                                    MouseRightButtonDown="StackPanel_MouseRightButtonDown">
 
                             <Image Source="{Binding Icon}"
                                    Width="{Binding Data.IconSize, Source={StaticResource Proxy}}"

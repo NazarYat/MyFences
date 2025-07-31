@@ -1,4 +1,6 @@
-﻿using MyFences.ViewModels;
+﻿using MyFences.Util;
+using MyFences.ViewModels;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,7 +35,7 @@ namespace MyFences.Windows
 
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
+            if (e.ButtonState == MouseButtonState.Pressed && e.ChangedButton == MouseButton.Left)
                 this.DragMove(); // Makes the window draggable
         }
 
@@ -225,6 +227,42 @@ namespace MyFences.Windows
                 {
                     ViewModel.NameEditing = false;
                 }
+            }
+        }
+
+        private DateTime _lastItemMouseDown = DateTime.MinValue;
+        private string _lastMouseDownItem = string.Empty;
+
+        private void StackPanel_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Left) return;
+
+            if (sender is FrameworkElement element && element.DataContext is ItemViewModel itemViewModel)
+            {
+                if (DateTime.Now - _lastItemMouseDown < TimeSpan.FromMilliseconds(300) && itemViewModel.Path == _lastMouseDownItem)
+                {
+
+                    _lastMouseDownItem = itemViewModel.Path;
+
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = itemViewModel.Path,
+                        UseShellExecute = true
+                    });
+                }
+                else
+                {
+                    _lastMouseDownItem = itemViewModel.Path;
+                    _lastItemMouseDown = DateTime.Now;
+                }
+            }
+        }
+
+        private void StackPanel_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is ItemViewModel itemViewModel)
+            {
+                ShellContextMenuHelper.ShowShellContextMenu(itemViewModel.Path, this);
             }
         }
     }
