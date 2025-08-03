@@ -1,6 +1,7 @@
 ﻿using MyFences.Util;
 using MyFences.ViewModels;
 using System.Diagnostics;
+using System.Drawing.Printing;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -264,6 +265,180 @@ namespace MyFences.Windows
             {
                 ShellContextMenuHelper.ShowShellContextMenu(itemViewModel.Path, this);
             }
+        }
+        private readonly Thickness _margin = new(50, 100, 20, 150);
+        private const int Columns = 20;
+        private const int Rows = 10;
+
+        private const int WM_MOVING = 0x0216;
+        private const int WM_SIZING = 0x0214;
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            var handle = new WindowInteropHelper(this).Handle;
+            HwndSource.FromHwnd(handle)?.AddHook(WndProc);
+        }
+
+        private Rect GetScreenBounds()
+        {
+            return new Rect(
+                SystemParameters.VirtualScreenLeft,
+                SystemParameters.VirtualScreenTop,
+                SystemParameters.VirtualScreenWidth,
+                SystemParameters.VirtualScreenHeight);
+        }
+
+        private double GetXStep(double screenWidth)
+        {
+            return (screenWidth - _margin.Left - _margin.Right) / (Columns - 1);
+        }
+
+        private double GetYStep(double screenHeight)
+        {
+            return (screenHeight - _margin.Top - _margin.Bottom) / (Rows - 1);
+        }
+
+        private double SnapToNearest(double value, double step, double offset, double min, double max)
+        {
+            double snapped = Math.Round((value - offset) / step) * step + offset;
+            return Math.Max(min, Math.Min(snapped, max));
+        }
+
+        private DpiScale GetDpi()
+        {
+            return VisualTreeHelper.GetDpi(this);
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            var screen = GetScreenBounds();
+            var dpi = GetDpi();
+            double scaleX = dpi.DpiScaleX;
+            double scaleY = dpi.DpiScaleY;
+
+            double xStep = GetXStep(screen.Width);
+            double yStep = GetYStep(screen.Height);
+
+            if (msg == WM_MOVING)
+            {
+                unsafe
+                {
+                    RECT* rect = (RECT*)lParam;
+
+                    double width = (rect->Right - rect->Left) / scaleX;
+                    double height = (rect->Bottom - rect->Top) / scaleY;
+
+                    double left = rect->Left / scaleX;
+                    double top = rect->Top / scaleY;
+
+                    double snappedLeft = SnapToNearest(left, xStep, _margin.Left,
+                        _margin.Left, screen.Right - _margin.Right - width);
+                    double snappedTop = SnapToNearest(top, yStep, _margin.Top,
+                        _margin.Top, screen.Bottom - _margin.Bottom - height);
+
+                    rect->Left = (int)(snappedLeft * scaleX);
+                    rect->Top = (int)(snappedTop * scaleY);
+                    rect->Right = (int)((snappedLeft + width) * scaleX);
+                    rect->Bottom = (int)((snappedTop + height) * scaleY);
+                }
+
+                handled = true;
+            }
+            else if (msg == WM_SIZING)
+            {
+                unsafe
+                {
+                    RECT* rect = (RECT*)lParam;
+                    int edge = wParam.ToInt32();
+
+                    double left = rect->Left / scaleX;
+                    double top = rect->Top / scaleY;
+                    double right = rect->Right / scaleX;
+                    double bottom = rect->Bottom / scaleY;
+
+                    switch (edge)
+                    {
+                        case 1: // Left
+                            left = SnapToNearest(left, xStep, _margin.Left, _margin.Left, right - xStep);
+                            break;
+                        case 2: // Right
+                            right = SnapToNearest(right, xStep, _margin.Left, left + xStep, screen.Right - _margin.Right);
+                            break;
+                        case 3: // Top
+                            top = SnapToNearest(top, yStep, _margin.Top, _margin.Top, bottom - yStep);
+                            break;
+                        case 6: // Bottom
+                            bottom = SnapToNearest(bottom, yStep, _margin.Top, top + yStep, screen.Bottom - _margin.Bottom);
+                            break;
+                        case 4: // Top-left
+                            left = SnapToNearest(left, xStep, _margin.Left, _margin.Left, right - xStep);
+                            top = SnapToNearest(top, yStep, _margin.Top, _margin.Top, bottom - yStep);
+                            break;
+                        case 5: // Top-right
+                            right = SnapToNearest(right, xStep, _margin.Left, left + xStep, screen.Right - _margin.Right);
+                            top = SnapToNearest(top, yStep, _margin.Top, _margin.Top, bottom - yStep);
+                            break;
+                        case 7: // Bottom-left
+                            left = SnapToNearest(left, xStep, _margin.Left, _margin.Left, right - xStep);
+                            bottom = SnapToNearest(bottom, yStep, _margin.Top, top + yStep, screen.Bottom - _margin.Bottom);
+                            break;
+                        case 8: // Bottom-right
+                            right = SnapToNearest(right, xStep, _margin.Left, left + xStep, screen.Right - _margin.Right);
+                            bottom = SnapToNearest(bottom, yStep, _margin.Top, top + yStep, screen.Bottom - _margin.Bottom);
+                            break;
+                    }
+
+                    rect->Left = (int)(left * scaleX);
+                    rect->Top = (int)(top * scaleY);
+                    rect->Right = (int)(right * scaleX);
+                    rect->Bottom = (int)(bottom * scaleY);
+                }
+
+                handled = true;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        public void SnapToScreenGrid()
+        {
+            var screen = GetScreenBounds();
+            var dpi = GetDpi();
+            double scaleX = dpi.DpiScaleX;
+            double scaleY = dpi.DpiScaleY;
+
+            double xStep = GetXStep(screen.Width);
+            double yStep = GetYStep(screen.Height);
+
+            double physicalWidth = Width * scaleX;
+            double physicalHeight = Height * scaleY;
+
+            double snappedLeft = SnapToNearest(Left * scaleX, xStep * scaleX, _margin.Left * scaleX,
+                _margin.Left * scaleX, (screen.Right - _margin.Right) * scaleX - physicalWidth) / scaleX;
+
+            double snappedTop = SnapToNearest(Top * scaleY, yStep * scaleY, _margin.Top * scaleY,
+                _margin.Top * scaleY, (screen.Bottom - _margin.Bottom) * scaleY - physicalHeight) / scaleY;
+
+            double snappedWidth = SnapToNearest(Width * scaleX, xStep * scaleX, 0,
+                xStep * scaleX, (screen.Width - _margin.Left - _margin.Right) * scaleX) / scaleX;
+
+            double snappedHeight = SnapToNearest(Height * scaleY, yStep * scaleY, 0,
+                yStep * scaleY, (screen.Height - _margin.Top - _margin.Bottom) * scaleY) / scaleY;
+
+            Left = snappedLeft;
+            Top = snappedTop;
+            Width = snappedWidth;
+            Height = snappedHeight;
         }
     }
 }
