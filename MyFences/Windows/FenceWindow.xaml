@@ -90,6 +90,11 @@
 
         <Grid Grid.Row="0" Background="#490059FF" 
               MouseDown="TopBar_MouseLeftButtonDown">
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Settings" Click="MenuItem_Click"/>
+                </ContextMenu>
+            </Grid.ContextMenu>
             <TextBlock Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
                        MaxWidth="500"
                        Grid.Column="1"

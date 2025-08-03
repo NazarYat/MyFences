@@ -1,6 +1,8 @@
 ﻿using MyFences.Models;
+using MyFences.Windows;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows;
 
 namespace MyFences.ViewModels
 {
@@ -182,6 +184,17 @@ namespace MyFences.ViewModels
             NotifyOfPropertyChanged(nameof(Items));
 
             _app.SaveData();
+        }
+        public void OpenSetupDialog()
+        {
+            var window = new SetupWindow();
+
+            window.DataContext = new SetupViewModel(
+                _app.GetApplicationData(),
+                Fence
+            );
+
+            window.ShowDialog();
         }
     }
 }

@@ -440,5 +440,13 @@ namespace MyFences.Windows
             Width = snappedWidth;
             Height = snappedHeight;
         }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FenceViewModel fenceViewModel)
+            {
+                fenceViewModel.OpenSetupDialog();
+            }
+        }
     }
 }

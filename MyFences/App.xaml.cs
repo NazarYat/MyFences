@@ -40,6 +40,10 @@ public partial class App : Application
             }
         }
     }
+    public ApplicationData GetApplicationData()
+    {
+        return _appData;
+    }
     public void SaveData()
     {
         //SerializationUtil.SaveToFile("data.json", _appData);
