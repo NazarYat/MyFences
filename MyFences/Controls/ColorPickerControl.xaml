@@ -1,0 +1,171 @@
+﻿<UserControl x:Class="MyFences.Controls.ColorPickerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:util="clr-namespace:MyFences.Util" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MyFences.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded">
+    <Grid>
+        <!-- Rectangle showing current color -->
+        <Border Name="ColorDisplay" 
+                BorderBrush="Gray" BorderThickness="1" CornerRadius="10"
+                MouseUp="ColorDisplay_MouseUp"
+                Height="25" Width="50">
+
+            <!-- Checkerboard background for transparency -->
+            <Border.Background>
+                <DrawingBrush TileMode="Tile" Viewport="0,0,10,10" ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <DrawingGroup.Children>
+                                <!-- Light gray background -->
+                                <GeometryDrawing Brush="#FFF0F0F0">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,10,10"/>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+
+                                <!-- Darker gray squares -->
+                                <GeometryDrawing Brush="#FFCCCCCC">
+                                    <GeometryDrawing.Geometry>
+                                        <GeometryGroup>
+                                            <RectangleGeometry Rect="0,0,5,5"/>
+                                            <RectangleGeometry Rect="5,5,5,5"/>
+                                        </GeometryGroup>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Border.Background>
+
+            <!-- Overlay for actual selected color -->
+            <Border Background="{Binding SelectedBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" CornerRadius="10"/>
+        </Border>
+
+        <!-- Popup with color pickers -->
+        <Popup Name="ColorPopup"
+               Placement="Bottom"
+               StaysOpen="False"
+               AllowsTransparency="True"
+               Opened="ColorPopup_Opened">
+            <Border Background="White" BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Padding="8">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <!-- Hue Saturation Square -->
+                        <Canvas Name="ColorCanvas"
+                            Width="200" Height="200"
+                            MouseDown="ColorCanvas_MouseDown"
+                            MouseMove="ColorCanvas_MouseMove"
+                            MouseUp="ColorCanvas_MouseUp">
+
+                            <!-- Base color gradient -->
+                            <Rectangle Width="200" Height="200">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="White" Offset="0"/>
+                                        <GradientStop Color="{Binding SelectedHueColor, RelativeSource={RelativeSource AncestorType=UserControl}}" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+
+                            <!-- Black overlay for value (brightness) -->
+                            <Rectangle Width="200" Height="200" OpacityMask="White">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#00FFFFFF" Offset="0"/>
+                                        <GradientStop Color="#FF000000" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+
+                            <!-- Selection thumb -->
+                            <Ellipse Name="SelectionThumb"
+             Width="10" Height="10"
+             Stroke="Black" StrokeThickness="2"
+             Fill="Transparent"
+             Canvas.Left="95" Canvas.Top="95"/>
+                        </Canvas>
+
+
+                        <!-- Color slider (Hue) -->
+                        <Slider Name="HueSlider" Minimum="0" Maximum="360" Orientation="Vertical" Height="200" Margin="5,0"
+                            ValueChanged="HueSlider_ValueChanged">
+                            <Slider.LayoutTransform>
+                                <ScaleTransform ScaleY="-1" />
+                            </Slider.LayoutTransform>
+                            <Slider.Background>
+                                <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                                    <GradientStop Color="#FFFF0000" Offset="0.0"/>
+                                    <GradientStop Color="#FFFFFF00" Offset="0.17"/>
+                                    <GradientStop Color="#FF00FF00" Offset="0.33"/>
+                                    <GradientStop Color="#FF00FFFF" Offset="0.5"/>
+                                    <GradientStop Color="#FF0000FF" Offset="0.67"/>
+                                    <GradientStop Color="#FFFF00FF" Offset="0.83"/>
+                                    <GradientStop Color="#FFFF0000" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Slider.Background>
+                        </Slider>
+
+                        <!-- Inverted Alpha slider: transparent at top, opaque at bottom -->
+                        <Border Margin="5,0">
+                            <!-- Checkerboard background for transparency -->
+                            <Border.Background>
+                                <DrawingBrush TileMode="Tile" Viewport="0,0,10,10" ViewportUnits="Absolute">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup.Children>
+                                                <!-- Light gray background -->
+                                                <GeometryDrawing Brush="#FFF0F0F0">
+                                                    <GeometryDrawing.Geometry>
+                                                        <RectangleGeometry Rect="0,0,10,10"/>
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+
+                                                <!-- Darker gray squares -->
+                                                <GeometryDrawing Brush="#FFCCCCCC">
+                                                    <GeometryDrawing.Geometry>
+                                                        <GeometryGroup>
+                                                            <RectangleGeometry Rect="0,0,5,5"/>
+                                                            <RectangleGeometry Rect="5,5,5,5"/>
+                                                        </GeometryGroup>
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+                                            </DrawingGroup.Children>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Border.Background>
+
+                            <!-- Overlay for actual selected color -->
+                            <Slider Name="AlphaSlider" Minimum="0" Maximum="1" Orientation="Vertical" Height="200"
+                                Value="1"
+                                ValueChanged="AlphaSlider_ValueChanged">
+                                <Slider.LayoutTransform>
+                                    <ScaleTransform ScaleY="-1" />
+                                </Slider.LayoutTransform>
+                                <Slider.Background>
+
+                                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                                        <GradientStop Color="{Binding SelectedColorWithAlpha0, RelativeSource={RelativeSource AncestorType=UserControl}}" Offset="0"/>
+                                        <GradientStop Color="{Binding SelectedColorWithAlpha1, RelativeSource={RelativeSource AncestorType=UserControl}}" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Slider.Background>
+                            </Slider>
+                        </Border>
+                    </StackPanel>
+
+                    <TextBox Name="HexColorBox"
+                             Margin="0, 10, 0, 0"
+                             VerticalAlignment="Center"
+                             HorizontalAlignment="Stretch"
+                             Text="{Binding SelectedColorHex, Mode=TwoWay, UpdateSourceTrigger=LostFocus, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>
