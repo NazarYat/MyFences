@@ -102,6 +102,7 @@ namespace MyFences.Controls
 
         private void TextBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
+            if (!PART_TextBox.IsFocused) return;
             if (e.Delta > 0) Value++;
             else Value--;
             e.Handled = true;
