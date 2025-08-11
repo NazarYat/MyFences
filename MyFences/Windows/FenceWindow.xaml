@@ -3,7 +3,9 @@
         xmlns:controls="clr-namespace:MyFences.Controls"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:util="clr-namespace:MyFences.Util" 
-        xmlns:converters="clr-namespace:MyFences.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:MyFences.ViewModels"
         Title="Fence"
         WindowStyle="None"
         ResizeMode="CanResize"
@@ -11,15 +13,15 @@
         Background="Transparent"
         AllowsTransparency="True"
         Loaded="FenceWindow_Loaded"
-        PreviewMouseDown="Window_PreviewMouseDown">
+        PreviewMouseDown="Window_PreviewMouseDown"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:FenceViewModel}"
+        BorderBrush="{Binding Fence.WindowBorderColor, Converter={StaticResource ColorToBrushConverter}}"
+        BorderThickness="{Binding Fence.BorderThickness}">
 
     <Window.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToVisibilityConverterInverted x:Key="BooleanToVisibilityConverterInverted" />
-        
         <util:BindingProxy x:Key="Proxy" Data="{Binding}" />
 
-        <!-- Text outline effect for desktop-like appearance -->
         <DropShadowEffect x:Key="TextOutlineEffect"
                           Color="Black"
                           BlurRadius="3"
@@ -37,12 +39,16 @@
                         <Grid Background="Transparent">
                             <Track Name="PART_Track" IsDirectionReversed="true">
                                 <Track.Thumb>
-                                    <Thumb Background="#FF6EC5FF"
-                                           BorderThickness="0"
+                                    <Thumb Background="{Binding Data.Fence.ScrollBarColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"
+                                           BorderThickness="{Binding Data.Fence.ScrollBarBorderThickness, Source={StaticResource Proxy}}"
                                            Margin="1 1 0 5">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Border Width="5" Background="#FF81A9FF" CornerRadius="3"/>
+                                                <Border Width="{Binding Data.Fence.ScrollBarWidth, Source={StaticResource Proxy}}" 
+                                                        Background="{Binding Data.Fence.ScrollBarColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}" 
+                                                        CornerRadius="{Binding Data.Fence.ScrollBarCornerRadius, Source={StaticResource Proxy}}"
+                                                        BorderBrush="{Binding Data.Fence.ScrollBarBorderColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"
+                                                        BorderThickness="{Binding Data.Fence.ScrollBarBorderThickness, Source={StaticResource Proxy}}"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -56,8 +62,8 @@
 
         <Style x:Key="TransparentTextBoxStyle" TargetType="TextBox">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Foreground" Value="{Binding Data.Fence.HeaderTextColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
+            <Setter Property="CaretBrush" Value="{Binding Data.Fence.HeaderTextColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -82,13 +88,13 @@
         </Style>
     </Window.Resources>
 
-    <Grid Background="#330059FF">
+    <Grid Background="{Binding Fence.BackgroundColor, Converter={StaticResource ColorToBrushConverter}}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="20"/>
+            <RowDefinition Height="{Binding Fence.HeaderHeight}"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="#490059FF" 
+        <Grid Grid.Row="0" Background="{Binding Fence.HeaderColor, Converter={StaticResource ColorToBrushConverter}}" 
               MouseDown="TopBar_MouseLeftButtonDown">
             <Grid.ContextMenu>
                 <ContextMenu>
@@ -98,12 +104,13 @@
             <TextBlock Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
                        MaxWidth="500"
                        Grid.Column="1"
-                       Foreground="White"
+                       Foreground="{Binding Data.Fence.HeaderTextColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Center"
                        TextAlignment="Center"
                        MouseLeftButtonDown="NameTextBlock_MouseLeftButtonDown"
-                       Visibility="{Binding NameEditing, Converter={StaticResource BooleanToVisibilityConverterInverted}}"/>
+                       Visibility="{Binding NameEditing, Converter={StaticResource BooleanToVisibilityConverterInverted}}"
+                       FontSize="{Binding Data.Fence.HeaderFontSize, Source={StaticResource Proxy}}" SnapsToDevicePixels="True"/>
             <TextBox x:Name="NameTextBox"
                      MaxWidth="500"
                      Margin="10 0"
@@ -114,32 +121,33 @@
                      LostKeyboardFocus="NameTextBox_LostFocus"
                      PreviewKeyDown="TextBox_PreviewKeyDown"
                      Visibility="{Binding NameEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
-                     Style="{StaticResource TransparentTextBoxStyle}"/>
+                     Style="{StaticResource TransparentTextBoxStyle}"
+                     FontSize="{Binding Data.Fence.HeaderFontSize, Source={StaticResource Proxy}}" SnapsToDevicePixels="True"/>
         </Grid>
 
         <Grid Grid.Row="1">
             <ListView x:Name="FilesListView"
-                        ItemsSource="{Binding Items}"
-                        Background="#00006CFF"
-                        BorderThickness="0"
-                        AllowDrop="True"
-                        Drop="ListView_Drop"
-                        DragOver="ListView_DragOver"
-                        PreviewKeyDown="ListView_PreviewKeyDown"
-                        SelectionMode="Extended"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                        ScrollViewer.CanContentScroll="False"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch">
+                      ItemsSource="{Binding Items}"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      AllowDrop="True"
+                      Drop="ListView_Drop"
+                      DragOver="ListView_DragOver"
+                      PreviewKeyDown="ListView_PreviewKeyDown"
+                      SelectionMode="Extended"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.CanContentScroll="False"
+                      HorizontalContentAlignment="Stretch"
+                      VerticalContentAlignment="Stretch">
                 <ListView.Resources>
                     <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource CustomVerticalScrollBar}" />
                 </ListView.Resources>
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <controls:UniformSpacingWrapPanel 
-                            ItemWidth="{Binding Data.ItemSize, Source={StaticResource Proxy}}" 
-                            ItemHeight="{Binding Data.ItemSize, Source={StaticResource Proxy}}" 
-                            VerticalSpacing="5"/>
+                            ItemWidth="{Binding Data.Fence.ItemWidth, Source={StaticResource Proxy}}" 
+                            ItemHeight="{Binding Data.Fence.ItemHeight, Source={StaticResource Proxy}}" 
+                            VerticalSpacing="{Binding Data.Fence.Spacing, Source={StaticResource Proxy}}"/>
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
 
@@ -149,14 +157,17 @@
                         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
                         <Setter Property="Padding" Value="0"/>
                         <Setter Property="Margin" Value="2"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Background" Value="{Binding Data.Fence.ItemColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
+                        <Setter Property="BorderBrush" Value="{Binding Data.Fence.ItemBorderColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
+                        <Setter Property="BorderThickness" Value="6"/>
                         <Setter Property="SnapsToDevicePixels" Value="True"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
                                     <Border x:Name="Bd"
                                             Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
                                             SnapsToDevicePixels="true"
                                             CornerRadius="2">
                                         <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -164,13 +175,14 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#22FFFFFF"/>
+                                            <Setter Property="Background" Value="{Binding Data.Fence.HighlightedItemColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
+                                            <Setter Property="BorderBrush" Value="{Binding Data.Fence.HighlightedItemBorderColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
+                                            <Setter Property="BorderThickness" Value="{Binding Data.Fence.HighlightedItemBorderThickness, Source={StaticResource Proxy}}"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#44FFFFFF"/>
-                                        </Trigger>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                                            <Setter Property="Background" Value="{Binding Data.Fence.SelectedItemColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
+                                            <Setter Property="BorderBrush" Value="{Binding Data.Fence.SelectedItemBorderColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
+                                            <Setter Property="BorderThickness" Value="{Binding Data.Fence.SelectedItemBorderThickness, Source={StaticResource Proxy}}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -183,14 +195,14 @@
                     <DataTemplate>
                         <StackPanel HorizontalAlignment="Center"
                                     Orientation="Vertical"
-                                    Width="{Binding Data.ItemSize, Source={StaticResource Proxy}}"
-                                    Height="{Binding Data.ItemSize, Source={StaticResource Proxy}}"
+                                    Width="{Binding Data.Fence.ItemWidth, Source={StaticResource Proxy}}"
+                                    Height="{Binding Data.Fence.ItemHeight, Source={StaticResource Proxy}}"
                                     MouseDown="StackPanel_MouseDown"
                                     MouseRightButtonDown="StackPanel_MouseRightButtonDown">
 
                             <Image Source="{Binding Icon}"
-                                   Width="{Binding Data.IconSize, Source={StaticResource Proxy}}"
-                                   Height="{Binding Data.IconSize, Source={StaticResource Proxy}}"
+                                   Width="{Binding Data.Fence.ItemIconSize, Source={StaticResource Proxy}}"
+                                   Height="{Binding Data.Fence.ItemIconSize, Source={StaticResource Proxy}}"
                                    Margin="0 5 0 0"
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
 
@@ -211,13 +223,13 @@
 
                                 <!-- Foreground white text -->
                                 <TextBlock Text="{Binding Name}"
-                                           Foreground="White"
-                                           MaxWidth="{Binding Data.ItemSize, Source={StaticResource Proxy}}"
+                                           Foreground="{Binding Data.Fence.ItemTextColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"
+                                           MaxWidth="{Binding Data.Fence.ItemSize, Source={StaticResource Proxy}}"
                                            TextWrapping="Wrap"
                                            HorizontalAlignment="Center"
                                            TextAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FontSize="12" SnapsToDevicePixels="True"/>
+                                           FontSize="{Binding Data.Fence.ItemFontSize, Source={StaticResource Proxy}}" SnapsToDevicePixels="True"/>
                             </Grid>
                         </StackPanel>
                     </DataTemplate>
