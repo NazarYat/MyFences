@@ -11,6 +11,7 @@ namespace MyFences.ViewModels
         public FenceViewModel() { }
         private readonly string[] _extensionsToHide = new string[] { ".lnk", ".exe" };
         private readonly App _app;
+        private readonly Window _window;
         public Fence Fence { get; set; } = null!;
         public ObservableCollection<ItemViewModel> Items { get; set; } = new ObservableCollection<ItemViewModel>();
 
@@ -37,9 +38,10 @@ namespace MyFences.ViewModels
             }
         }
 
-        public FenceViewModel(App app, Fence model)
+        public FenceViewModel(App app, Fence model, Window window)
         {
             _app = app;
+            _window = window;
             Fence = model;
 
             CheckItemsExist();
@@ -160,6 +162,10 @@ namespace MyFences.ViewModels
                     NotifyOfPropertyChanged(nameof(Name));
                     NotifyOfPropertyChanged(nameof(Fence));
 
+                    if (this._window is FenceWindow FV)
+                    {
+                        FV.UseBlur = Fence.UseBlur;
+                    }
                 }
             );
 

@@ -1,7 +1,6 @@
 ﻿using MyFences.Util;
 using MyFences.ViewModels;
 using System.Diagnostics;
-using System.Drawing.Printing;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +18,18 @@ namespace MyFences.Windows
     {
         public FenceViewModel? ViewModel => DataContext as FenceViewModel;
 
+        private bool _useBlur = false;
+        public bool UseBlur
+        {
+            get => _useBlur;
+            set
+            {
+                if (_useBlur == value) return;
+                _useBlur = value;
+                if (value) EnableBlur();
+                else DisableBlur();
+            }
+        }
         public FenceWindow()
         {
             InitializeComponent();
@@ -105,7 +116,7 @@ namespace MyFences.Windows
             SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
             SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-            EnableBlur();
+            if (ViewModel != null && ViewModel.Fence.UseBlur) EnableBlur();
         }
         private void EnableBlur()
         {
@@ -113,6 +124,29 @@ namespace MyFences.Windows
             var accent = new AccentPolicy
             {
                 AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND
+            };
+
+            int accentStructSize = Marshal.SizeOf(accent);
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData
+            {
+                Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY,
+                SizeOfData = accentStructSize,
+                Data = accentPtr
+            };
+
+            SetWindowCompositionAttribute(windowHelper.Handle, ref data);
+            Marshal.FreeHGlobal(accentPtr);
+        }
+
+        private void DisableBlur()
+        {
+            var windowHelper = new WindowInteropHelper(this);
+            var accent = new AccentPolicy
+            {
+                AccentState = AccentState.ACCENT_DISABLED
             };
 
             int accentStructSize = Marshal.SizeOf(accent);

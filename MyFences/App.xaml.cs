@@ -20,9 +20,9 @@ public partial class App : Application
 
         foreach (var fence in _appData.Fences)
         {
-            var viewModel = new FenceViewModel(this, fence);
-
             var window = new FenceWindow();
+
+            var viewModel = new FenceViewModel(this, fence, window);
 
             window.DataContext = viewModel;
 
