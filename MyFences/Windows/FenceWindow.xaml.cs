@@ -300,9 +300,10 @@ namespace MyFences.Windows
                 ShellContextMenuHelper.ShowShellContextMenu(itemViewModel.Path, this);
             }
         }
-        private readonly Thickness _margin = new(50, 100, 20, 150);
-        private const int Columns = 20;
-        private const int Rows = 10;
+        private Thickness _margin => ViewModel?.ApplicationData.GridMargin ?? new Thickness(0, 0, 0, 0);
+        private int Columns => ViewModel?.ApplicationData.GridColumns ?? 0;
+        private int Rows => ViewModel?.ApplicationData.GridRows ?? 0;
+        private bool UseGrid => ViewModel?.ApplicationData.UseGrid ?? false;
 
         private const int WM_MOVING = 0x0216;
         private const int WM_SIZING = 0x0214;
@@ -355,6 +356,8 @@ namespace MyFences.Windows
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
+            if (!UseGrid) return IntPtr.Zero;
+
             var screen = GetScreenBounds();
             var dpi = GetDpi();
             double scaleX = dpi.DpiScaleX;

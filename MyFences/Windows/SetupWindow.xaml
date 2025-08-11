@@ -119,8 +119,35 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+
+                    <Label Grid.Column="0" Grid.Row="0" Content="Grid margins" Style="{StaticResource DefaultLabel}" />
+                    <controls:ThicknessEditor Grid.Column="1" Grid.Row="0" 
+                                              Value="{Binding GridMargin, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
+                                              TextBoxStyle="{StaticResource TextBoxStyle}" />
+
+                    <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
+                                Orientation="Horizontal">
+                        <Label Content="Columns: " Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Minimum="0" Maximum="700" 
+                                                  Width="50"
+                                                  Value="{Binding GridColumns, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
+                                                  TextBoxStyle="{StaticResource TextBoxStyle}"/>
+                        
+                        <Label Content="Rows: " Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Minimum="0" Maximum="700" 
+                                                  Width="50"
+                                                  Value="{Binding GridRows, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
+                                                  TextBoxStyle="{StaticResource TextBoxStyle}"/>
+                    </StackPanel>
+
+                    <Label Grid.Column="0" Grid.Row="2" Content="Use grid" Style="{StaticResource DefaultLabel}" />
+                    <CheckBox Grid.Column="1" Grid.Row="2" IsChecked="{Binding UseGrid, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
+                              Style="{StaticResource FancyRoundedCheckBox}" />
+
                 </Grid>
             </TabItem>
             <TabItem Header="Current" IsSelected="True">

@@ -1,6 +1,7 @@
 ﻿using MyFences.Models;
 using System.Windows.Media;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace MyFences.ViewModels
 {
@@ -436,6 +437,49 @@ namespace MyFences.ViewModels
 
                 Fence.ScrollBarWidth = value;
 
+                NotifyOfPropertyChanged();
+            }
+        }
+
+        // Global
+
+        public Thickness GridMargin
+        {
+            get => ApplicationData.GridMargin;
+            set
+            {
+                if (ApplicationData.GridMargin == value) return;
+                ApplicationData.GridMargin = value;
+                NotifyOfPropertyChanged();
+            }
+        }
+        public int GridColumns
+        {
+            get => ApplicationData.GridColumns;
+            set
+            {
+                if (ApplicationData.GridColumns == value) return;
+                ApplicationData.GridColumns = value;
+                NotifyOfPropertyChanged();
+            }
+        }
+        public int GridRows
+        {
+            get => ApplicationData.GridRows;
+            set
+            {
+                if (ApplicationData.GridRows == value) return;
+                ApplicationData.GridRows = value;
+                NotifyOfPropertyChanged();
+            }
+        }
+        public bool UseGrid
+        {
+            get => ApplicationData.UseGrid;
+            set
+            {
+                if (ApplicationData.UseGrid == value) return;
+                ApplicationData.UseGrid = value;
                 NotifyOfPropertyChanged();
             }
         }

@@ -12,6 +12,7 @@ namespace MyFences.ViewModels
         private readonly string[] _extensionsToHide = new string[] { ".lnk", ".exe" };
         private readonly App _app;
         private readonly Window _window;
+        public ApplicationData ApplicationData { get; set; } = null!;
         public Fence Fence { get; set; } = null!;
         public ObservableCollection<ItemViewModel> Items { get; set; } = new ObservableCollection<ItemViewModel>();
 
@@ -43,6 +44,7 @@ namespace MyFences.ViewModels
             _app = app;
             _window = window;
             Fence = model;
+            ApplicationData = app.GetApplicationData();
 
             CheckItemsExist();
             LoadItems();
