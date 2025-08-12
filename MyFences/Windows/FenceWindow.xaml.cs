@@ -300,10 +300,10 @@ namespace MyFences.Windows
                 ShellContextMenuHelper.ShowShellContextMenu(itemViewModel.Path, this);
             }
         }
-        private Thickness _margin => ViewModel?.ApplicationData.GridMargin ?? new Thickness(0, 0, 0, 0);
-        private int Columns => ViewModel?.ApplicationData.GridColumns ?? 0;
-        private int Rows => ViewModel?.ApplicationData.GridRows ?? 0;
-        private bool UseGrid => ViewModel?.ApplicationData.UseGrid ?? false;
+        private Thickness _margin => ViewModel?._applicationViewModel.AppData.GridMargin ?? new Thickness(0, 0, 0, 0);
+        private int Columns => ViewModel?._applicationViewModel.AppData.GridColumns ?? 0;
+        private int Rows => ViewModel?._applicationViewModel.AppData.GridRows ?? 0;
+        private bool UseGrid => ViewModel?._applicationViewModel.AppData.UseGrid ?? false;
 
         private const int WM_MOVING = 0x0216;
         private const int WM_SIZING = 0x0214;
@@ -483,6 +483,20 @@ namespace MyFences.Windows
             if (DataContext is FenceViewModel fenceViewModel)
             {
                 fenceViewModel.OpenSetupDialog();
+            }
+        }
+        private void MenuItem_Click2(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FenceViewModel fenceViewModel)
+            {
+                fenceViewModel.CreateNewFence();
+            }
+        }
+        private void MenuItem_Click3(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is FenceViewModel fenceViewModel)
+            {
+                fenceViewModel.DeleteFence();
             }
         }
     }

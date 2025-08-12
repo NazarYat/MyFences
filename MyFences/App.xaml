@@ -7,5 +7,10 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToVisibilityConverterInverted x:Key="BooleanToVisibilityConverterInverted" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+        <ResourceDictionary x:Key="buttonResources">
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ButtonResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

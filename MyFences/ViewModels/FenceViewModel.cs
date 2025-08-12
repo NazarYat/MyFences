@@ -6,13 +6,12 @@ using System.Windows;
 
 namespace MyFences.ViewModels
 {
-    public class FenceViewModel : ViewModelBase
+    public class FenceViewModel : WindowViewModelBase
     {
-        public FenceViewModel() { }
+        public FenceViewModel() : base() { }
+
         private readonly string[] _extensionsToHide = new string[] { ".lnk", ".exe" };
-        private readonly App _app;
         private readonly Window _window;
-        public ApplicationData ApplicationData { get; set; } = null!;
         public Fence Fence { get; set; } = null!;
         public ObservableCollection<ItemViewModel> Items { get; set; } = new ObservableCollection<ItemViewModel>();
 
@@ -39,12 +38,10 @@ namespace MyFences.ViewModels
             }
         }
 
-        public FenceViewModel(App app, Fence model, Window window)
+        public FenceViewModel(ApplicationViewModel appVM, Fence model, Window window) : base(appVM)
         {
-            _app = app;
             _window = window;
             Fence = model;
-            ApplicationData = app.GetApplicationData();
 
             CheckItemsExist();
             LoadItems();
@@ -67,7 +64,7 @@ namespace MyFences.ViewModels
                 }
             }
 
-            _app.SaveData();
+            _applicationViewModel.SaveData();
         }
 
         private void LoadItems()
@@ -134,7 +131,7 @@ namespace MyFences.ViewModels
 
             NotifyOfPropertyChanged(nameof(Items));
 
-            _app.SaveData();
+            _applicationViewModel.SaveData();
         }
 
         public void RemoveFile(ItemViewModel item)
@@ -150,14 +147,14 @@ namespace MyFences.ViewModels
 
             NotifyOfPropertyChanged(nameof(Items));
 
-            _app.SaveData();
+            _applicationViewModel.SaveData();
         }
         public void OpenSetupDialog()
         {
             var window = new SetupWindow();
 
             window.DataContext = new SetupViewModel(
-                _app.GetApplicationData(),
+                _applicationViewModel,
                 Fence,
                 () =>
                 {
@@ -172,6 +169,17 @@ namespace MyFences.ViewModels
             );
 
             window.ShowDialog();
+        }
+
+        public void CreateNewFence()
+        {
+            _applicationViewModel.CreateNewFence();
+        }
+
+        public void DeleteFence()
+        {
+            _window.Close();
+            _applicationViewModel.DeleteFence(Fence);
         }
     }
 }

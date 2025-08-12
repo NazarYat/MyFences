@@ -11,6 +11,9 @@
         d:DataContext="{d:DesignInstance Type=vm:SetupViewModel}">
     <Window.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ButtonResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
             <Style x:Key="DefaultLabel" TargetType="Label">
                 <Setter Property="Margin" Value="5"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -187,125 +190,148 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <Label Grid.Column="0" Grid.Row="0" Content="Name" Style="{StaticResource DefaultLabel}" />
-                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" Style="{StaticResource TextBoxStyle}" />
+                        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                            <ComboBox ItemsSource="{Binding ApplicationData.Fences}"
+                                      SelectedValue="{Binding FenceToCopyFrom, UpdateSourceTrigger=PropertyChanged}"
+                                      Margin="5"
+                                      Width="100">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" Margin="5,0"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Content="Copy style"
+                                    HorizontalContentAlignment="Center"
+                                    Style="{StaticResource FancyButton}"
+                                    Click="Button_Click"/>
+                            <Button Content="Set this style for all"
+                                    Style="{StaticResource FancyButton}"
+                                    Click="Button_Click_1"/>
+                        </StackPanel>
 
-                        <Label Grid.Column="0" Grid.Row="1" Content="Use blur" Style="{StaticResource DefaultLabel}" />
-                        <CheckBox Grid.Column="1" Grid.Row="1" IsChecked="{Binding UseBlur, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
+                        <Label Grid.Column="0" Grid.Row="1" Content="Name" Style="{StaticResource DefaultLabel}" />
+                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, Delay=300}" Style="{StaticResource TextBoxStyle}" />
+
+                        <Label Grid.Column="0" Grid.Row="2" Content="Use blur" Style="{StaticResource DefaultLabel}" />
+                        <CheckBox Grid.Column="1" Grid.Row="2" IsChecked="{Binding UseBlur, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                 Style="{StaticResource FancyRoundedCheckBox}" />
 
-                        <Label Grid.Column="0" Grid.Row="2" Content="Border thickness" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="2" Minimum="0" Maximum="50" 
+                        <Label Grid.Column="0" Grid.Row="3" Content="Border thickness" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="3" Minimum="0" Maximum="50" 
                                               Value="{Binding BorderThickness, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                               TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="3" 
-                           Content="Background color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left" SelectedColor="{Binding BackgroundColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
-
                         <Label Grid.Column="0" Grid.Row="4" 
-                           Content="Window border color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="4" HorizontalAlignment="Left" SelectedColor="{Binding WindowBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                           Content="Background color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="4" HorizontalAlignment="Left" SelectedColor="{Binding BackgroundColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
                         <Label Grid.Column="0" Grid.Row="5" 
-                           Content="Header color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="5" HorizontalAlignment="Left" SelectedColor="{Binding HeaderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                           Content="Window border color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="5" HorizontalAlignment="Left" SelectedColor="{Binding WindowBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="6" Content="Header height" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="6" Minimum="0" Maximum="100" 
+                        <Label Grid.Column="0" Grid.Row="6" 
+                           Content="Header color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="6" HorizontalAlignment="Left" SelectedColor="{Binding HeaderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+
+                        <Label Grid.Column="0" Grid.Row="7" Content="Header height" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="7" Minimum="0" Maximum="100" 
                                               Value="{Binding HeaderHeight, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                               TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="7" Content="Items spacing" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="7" Minimum="0" Maximum="100" 
+                        <Label Grid.Column="0" Grid.Row="8" Content="Items spacing" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="8" Minimum="0" Maximum="100" 
                                               Value="{Binding Spacing, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                               TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="8" Content="Item height" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="8" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="9" Content="Item height" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="9" Minimum="0" Maximum="200" 
                                               Value="{Binding ItemHeight, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                               TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="9" Content="Item width" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="9" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="10" Content="Item width" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="10" Minimum="0" Maximum="200" 
                                               Value="{Binding ItemWidth, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                               TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="10" Content="Item icon size" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="10" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="11" Content="Item icon size" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="11" Minimum="0" Maximum="200" 
                                               Value="{Binding ItemIconSize, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                               TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="11" Content="Item color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="11" HorizontalAlignment="Left" SelectedColor="{Binding ItemColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="12" Content="Item color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="12" HorizontalAlignment="Left" SelectedColor="{Binding ItemColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="12" Content="Item border color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="12" HorizontalAlignment="Left" SelectedColor="{Binding ItemBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="13" Content="Item border color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="13" HorizontalAlignment="Left" SelectedColor="{Binding ItemBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="13" Content="Item border thickness" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="13" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="14" Content="Item border thickness" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="14" Minimum="0" Maximum="200" 
                                                   Value="{Binding ItemBorderThickness, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="14" Content="Highlighted item color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="14" HorizontalAlignment="Left" SelectedColor="{Binding HighlightedItemColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="15" Content="Highlighted item color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="15" HorizontalAlignment="Left" SelectedColor="{Binding HighlightedItemColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="15" Content="Highlighted item border color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="15" HorizontalAlignment="Left" SelectedColor="{Binding HighlightedItemBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="16" Content="Highlighted item border color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="16" HorizontalAlignment="Left" SelectedColor="{Binding HighlightedItemBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="16" Content="Highlighted item border thickness" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="16" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="17" Content="Highlighted item border thickness" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="17" Minimum="0" Maximum="200" 
                                                   Value="{Binding HighlightedItemBorderThickness, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="17" Content="Selected item color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="17" HorizontalAlignment="Left" SelectedColor="{Binding SelectedItemColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="18" Content="Selected item color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="18" HorizontalAlignment="Left" SelectedColor="{Binding SelectedItemColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="18" Content="Selected item border color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="18" HorizontalAlignment="Left" SelectedColor="{Binding SelectedItemBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="19" Content="Selected item border color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="19" HorizontalAlignment="Left" SelectedColor="{Binding SelectedItemBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="19" Content="Selected item border thickness" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="19" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="20" Content="Selected item border thickness" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="20" Minimum="0" Maximum="200" 
                                                   Value="{Binding SelectedItemBorderThickness, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="20" Content="Item text color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="20" HorizontalAlignment="Left" SelectedColor="{Binding ItemTextColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="21" Content="Item text color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="21" HorizontalAlignment="Left" SelectedColor="{Binding ItemTextColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="21" Content="Header text color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="21" HorizontalAlignment="Left" SelectedColor="{Binding HeaderTextColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="22" Content="Header text color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="22" HorizontalAlignment="Left" SelectedColor="{Binding HeaderTextColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="22" Content="Header font size" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="22" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="23" Content="Header font size" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="23" Minimum="0" Maximum="200" 
                                                   Value="{Binding HeaderFontSize, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="23" Content="Item font size" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="23" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="24" Content="Item font size" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="24" Minimum="0" Maximum="200" 
                                                   Value="{Binding ItemFontSize, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="24" Content="Scroll bar color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="24" HorizontalAlignment="Left" SelectedColor="{Binding ScrollBarColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="25" Content="Scroll bar color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="25" HorizontalAlignment="Left" SelectedColor="{Binding ScrollBarColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="25" Content="Scroll bar border color" Style="{StaticResource DefaultLabel}" />
-                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="25" HorizontalAlignment="Left" SelectedColor="{Binding ScrollBarBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
+                        <Label Grid.Column="0" Grid.Row="26" Content="Scroll bar border color" Style="{StaticResource DefaultLabel}" />
+                        <controls:ColorPickerControl Grid.Column="1" Grid.Row="26" HorizontalAlignment="Left" SelectedColor="{Binding ScrollBarBorderColor, UpdateSourceTrigger=PropertyChanged, Delay=300}" />
 
-                        <Label Grid.Column="0" Grid.Row="26" Content="Scroll bar border thickness" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="26" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="27" Content="Scroll bar border thickness" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="27" Minimum="0" Maximum="200" 
                                                   Value="{Binding ScrollBarBorderThickness, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="27" Content="Scroll bar corner radius" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="27" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="28" Content="Scroll bar corner radius" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="28" Minimum="0" Maximum="200" 
                                                   Value="{Binding ScrollBarCornerRadius, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 
-                        <Label Grid.Column="0" Grid.Row="28" Content="Scroll bar width" Style="{StaticResource DefaultLabel}" />
-                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="28" Minimum="0" Maximum="200" 
+                        <Label Grid.Column="0" Grid.Row="29" Content="Scroll bar width" Style="{StaticResource DefaultLabel}" />
+                        <controls:NumericUpToDown Grid.Column="1" Grid.Row="29" Minimum="0" Maximum="200" 
                                                   Value="{Binding ScrollBarWidth, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
                                                   TextBoxStyle="{StaticResource TextBoxStyle}"/>
 

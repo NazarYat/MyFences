@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using MyFences.ViewModels;
+using System.Windows;
 
 namespace MyFences.Windows
 {
@@ -10,6 +11,22 @@ namespace MyFences.Windows
         public SetupWindow()
         {
             InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is SetupViewModel viewModel)
+            {
+                viewModel.CopyFromSelected();
+            }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is SetupViewModel viewModel)
+            {
+                viewModel.CopyOpenedStyleForAll();
+            }
         }
     }
 }

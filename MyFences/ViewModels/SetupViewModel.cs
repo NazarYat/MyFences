@@ -2,15 +2,28 @@
 using System.Windows.Media;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using MyFences.Util;
 
 namespace MyFences.ViewModels
 {
-    public class SetupViewModel : ViewModelBase
+    public class SetupViewModel : WindowViewModelBase
     {
         private readonly Action? _settingChangedCallback;
         public SetupViewModel() { }
-        public ApplicationData ApplicationData { get; set; }
         public Fence Fence { get; set; }
+
+        private Fence? _fenceToCopyFrom;
+        public Fence? FenceToCopyFrom
+        {
+            get => _fenceToCopyFrom;
+            set
+            {
+                if (_fenceToCopyFrom == value) return;
+                _fenceToCopyFrom = value;
+
+                NotifyOfPropertyChanged();
+            }
+        }
 
         public string Name
         {
@@ -445,49 +458,48 @@ namespace MyFences.ViewModels
 
         public Thickness GridMargin
         {
-            get => ApplicationData.GridMargin;
+            get => _applicationViewModel.AppData.GridMargin;
             set
             {
-                if (ApplicationData.GridMargin == value) return;
-                ApplicationData.GridMargin = value;
+                if (_applicationViewModel.AppData.GridMargin == value) return;
+                _applicationViewModel.AppData.GridMargin = value;
                 NotifyOfPropertyChanged();
             }
         }
         public int GridColumns
         {
-            get => ApplicationData.GridColumns;
+            get => _applicationViewModel.AppData.GridColumns;
             set
             {
-                if (ApplicationData.GridColumns == value) return;
-                ApplicationData.GridColumns = value;
+                if (_applicationViewModel.AppData.GridColumns == value) return;
+                _applicationViewModel.AppData.GridColumns = value;
                 NotifyOfPropertyChanged();
             }
         }
         public int GridRows
         {
-            get => ApplicationData.GridRows;
+            get => _applicationViewModel.AppData.GridRows;
             set
             {
-                if (ApplicationData.GridRows == value) return;
-                ApplicationData.GridRows = value;
+                if (_applicationViewModel.AppData.GridRows == value) return;
+                _applicationViewModel.AppData.GridRows = value;
                 NotifyOfPropertyChanged();
             }
         }
         public bool UseGrid
         {
-            get => ApplicationData.UseGrid;
+            get => _applicationViewModel.AppData.UseGrid;
             set
             {
-                if (ApplicationData.UseGrid == value) return;
-                ApplicationData.UseGrid = value;
+                if (_applicationViewModel.AppData.UseGrid == value) return;
+                _applicationViewModel.AppData.UseGrid = value;
                 NotifyOfPropertyChanged();
             }
         }
 
 
-        public SetupViewModel(ApplicationData applicationData, Fence fence, Action? settingChangedCallback = null)
+        public SetupViewModel(ApplicationViewModel applicationData, Fence fence, Action? settingChangedCallback = null) : base(applicationData)
         {
-            ApplicationData = applicationData;
             Fence = fence;
             _settingChangedCallback = settingChangedCallback;
         }
@@ -497,6 +509,27 @@ namespace MyFences.ViewModels
             base.NotifyOfPropertyChanged(propertyName);
 
             _settingChangedCallback?.Invoke();
+        }
+
+        public void CopyFromSelected()
+        {
+            if (Fence == null || FenceToCopyFrom == null) return;
+
+            Fence.CopyStyleFrom(FenceToCopyFrom);
+
+            NotifyOfPropertyChanged(null);
+        }
+        public void CopyOpenedStyleForAll()
+        {
+            if (Fence == null) return;
+
+            foreach (var f in _applicationViewModel.FenceViewModels.Values)
+            {
+                if (f.Fence == Fence) continue;
+                f.Fence.CopyStyleFrom(Fence);
+
+                f.NotifyViewModelChanged();
+            }
         }
     }
 }

@@ -99,6 +99,8 @@
             <Grid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Settings" Click="MenuItem_Click"/>
+                    <MenuItem Header="New fence" Click="MenuItem_Click2"/>
+                    <MenuItem Header="Delete" Click="MenuItem_Click3"/>
                 </ContextMenu>
             </Grid.ContextMenu>
             <TextBlock Text="{Binding Name, UpdateSourceTrigger=LostFocus}"

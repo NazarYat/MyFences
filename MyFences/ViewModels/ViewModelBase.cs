@@ -7,6 +7,10 @@ namespace MyFences.ViewModels
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        public virtual void NotifyViewModelChanged()
+        {
+            NotifyOfPropertyChanged(null);
+        }
         protected virtual void NotifyOfPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
