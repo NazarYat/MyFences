@@ -195,18 +195,11 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-                            <ComboBox ItemsSource="{Binding ApplicationData.Fences}"
+                            <ComboBox ItemsSource="{Binding FenceViewModels}"
                                       SelectedValue="{Binding FenceToCopyFrom, UpdateSourceTrigger=PropertyChanged}"
+                                      DisplayMemberPath="Name"
                                       Margin="5"
-                                      Width="100">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Name}" Margin="5,0"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                                      Width="100"/>
                             <Button Content="Copy style"
                                     HorizontalContentAlignment="Center"
                                     Style="{StaticResource FancyButton}"

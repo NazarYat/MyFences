@@ -3,6 +3,7 @@ using System.Windows.Media;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using MyFences.Util;
+using System.Collections.ObjectModel;
 
 namespace MyFences.ViewModels
 {
@@ -12,8 +13,10 @@ namespace MyFences.ViewModels
         public SetupViewModel() { }
         public Fence Fence { get; set; }
 
-        private Fence? _fenceToCopyFrom;
-        public Fence? FenceToCopyFrom
+        public ObservableCollection<FenceViewModel> FenceViewModels => new ObservableCollection<FenceViewModel>(_applicationViewModel.FenceViewModels.Values.Where(f => f.Fence != Fence));
+
+        private FenceViewModel? _fenceToCopyFrom;
+        public FenceViewModel? FenceToCopyFrom
         {
             get => _fenceToCopyFrom;
             set
@@ -515,7 +518,7 @@ namespace MyFences.ViewModels
         {
             if (Fence == null || FenceToCopyFrom == null) return;
 
-            Fence.CopyStyleFrom(FenceToCopyFrom);
+            Fence.CopyStyleFrom(FenceToCopyFrom.Fence);
 
             NotifyOfPropertyChanged(null);
         }

@@ -113,7 +113,7 @@ namespace MyFences.Controls
                 SetupValuesFromSelectedColor();
             }
         }
-        private void SetupValuesFromSelectedColor()
+        public void SetupValuesFromSelectedColor()
         {
             var color = SelectedColor;
 
@@ -125,7 +125,12 @@ namespace MyFences.Controls
             Saturation = hsv.s;
             Value = hsv.v;
         }
-        private static void OnSelectedColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) { }
+        private static void OnSelectedColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (ColorPickerControl)d;
+
+            control.SetupValuesFromSelectedColor();
+        }
         public Color SelectedColorInternal => HSVAToColor(Hue, Saturation, Value, Alpha);
         public Color SelectedHueColor => HSVAToColor(Hue, 1, 1, 1);
         public Color SelectedColorWithAlpha0 => HSVAToColor(Hue, Saturation, Value, 0);
