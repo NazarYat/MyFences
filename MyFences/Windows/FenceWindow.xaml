@@ -17,7 +17,9 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:FenceViewModel}"
         BorderBrush="{Binding Fence.WindowBorderColor, Converter={StaticResource ColorToBrushConverter}}"
-        BorderThickness="{Binding Fence.BorderThickness}">
+        BorderThickness="{Binding Fence.BorderThickness}"
+        SizeChanged="Window_SizeChanged"
+        LocationChanged="Window_LocationChanged">
 
     <Window.Resources>
         <util:BindingProxy x:Key="Proxy" Data="{Binding}" />
@@ -161,7 +163,7 @@
                         <Setter Property="Margin" Value="2"/>
                         <Setter Property="Background" Value="{Binding Data.Fence.ItemColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
                         <Setter Property="BorderBrush" Value="{Binding Data.Fence.ItemBorderColor, Converter={StaticResource ColorToBrushConverter}, Source={StaticResource Proxy}}"/>
-                        <Setter Property="BorderThickness" Value="6"/>
+                        <Setter Property="BorderThickness" Value="{Binding Data.Fence.ItemBorderThickness, Source={StaticResource Proxy}}"/>
                         <Setter Property="SnapsToDevicePixels" Value="True"/>
                         <Setter Property="Template">
                             <Setter.Value>

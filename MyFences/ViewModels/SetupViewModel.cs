@@ -41,58 +41,6 @@ namespace MyFences.ViewModels
             }
         }
 
-        public float Width
-        {
-            get => Fence.Width;
-            set
-            {
-                if (Fence.Width == value) return;
-
-                Fence.Width = value;
-
-                NotifyOfPropertyChanged();
-            }
-        }
-
-        public float Height
-        {
-            get => Fence.Height;
-            set
-            {
-                if (Fence.Height == value) return;
-
-                Fence.Height = value;
-
-                NotifyOfPropertyChanged();
-            }
-        }
-
-        public float Left
-        {
-            get => Fence.Left;
-            set
-            {
-                if (Fence.Left == value) return;
-
-                Fence.Left = value;
-
-                NotifyOfPropertyChanged();
-            }
-        }
-
-        public float Top
-        {
-            get => Fence.Top;
-            set
-            {
-                if (Fence.Top == value) return;
-
-                Fence.Top = value;
-
-                NotifyOfPropertyChanged();
-            }
-        }
-
         public bool UseBlur
         {
             get => Fence.UseBlur;

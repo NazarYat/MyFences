@@ -1,0 +1,1 @@
+﻿Unregister-ScheduledTask -TaskName 'MyFences' -Confirm:$false

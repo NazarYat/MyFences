@@ -9,10 +9,10 @@ namespace MyFences.Models
 
         // Common
         public string Name { get; set; } = "New Fence";
-        public float Width { get; set; } = 100;
-        public float Height { get; set; } = 100;
-        public float Left { get; set; } = 100;
-        public float Top { get; set; } = 100;
+        public double Width { get; set; } = 100;
+        public double Height { get; set; } = 100;
+        public double Left { get; set; } = 100;
+        public double Top { get; set; } = 100;
         public bool UseBlur { get; set; } = true;
         public int BorderThickness { get; set; } = 0;
 

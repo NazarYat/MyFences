@@ -447,37 +447,6 @@ namespace MyFences.Windows
             return IntPtr.Zero;
         }
 
-        public void SnapToScreenGrid()
-        {
-            var screen = GetScreenBounds();
-            var dpi = GetDpi();
-            double scaleX = dpi.DpiScaleX;
-            double scaleY = dpi.DpiScaleY;
-
-            double xStep = GetXStep(screen.Width);
-            double yStep = GetYStep(screen.Height);
-
-            double physicalWidth = Width * scaleX;
-            double physicalHeight = Height * scaleY;
-
-            double snappedLeft = SnapToNearest(Left * scaleX, xStep * scaleX, _margin.Left * scaleX,
-                _margin.Left * scaleX, (screen.Right - _margin.Right) * scaleX - physicalWidth) / scaleX;
-
-            double snappedTop = SnapToNearest(Top * scaleY, yStep * scaleY, _margin.Top * scaleY,
-                _margin.Top * scaleY, (screen.Bottom - _margin.Bottom) * scaleY - physicalHeight) / scaleY;
-
-            double snappedWidth = SnapToNearest(Width * scaleX, xStep * scaleX, 0,
-                xStep * scaleX, (screen.Width - _margin.Left - _margin.Right) * scaleX) / scaleX;
-
-            double snappedHeight = SnapToNearest(Height * scaleY, yStep * scaleY, 0,
-                yStep * scaleY, (screen.Height - _margin.Top - _margin.Bottom) * scaleY) / scaleY;
-
-            Left = snappedLeft;
-            Top = snappedTop;
-            Width = snappedWidth;
-            Height = snappedHeight;
-        }
-
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is FenceViewModel fenceViewModel)
@@ -498,6 +467,26 @@ namespace MyFences.Windows
             {
                 fenceViewModel.DeleteFence();
             }
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            SetWindowLayout();
+        }
+
+        private void Window_LocationChanged(object sender, EventArgs e)
+        {
+            SetWindowLayout();
+        }
+
+        private void SetWindowLayout()
+        {
+            if (ViewModel?.Fence == null) return;
+
+            ViewModel.Fence.Left = Left;
+            ViewModel.Fence.Top = Top;
+            ViewModel.Fence.Width = Width;
+            ViewModel.Fence.Height = Height;
         }
     }
 }

@@ -11,6 +11,17 @@ namespace MyFences.Util
         public static void SaveToFile(string path, object obj)
         {
             string json = SerializeToJson(obj);
+
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            }
+
+            if (!File.Exists(path))
+            {
+                File.Create(path).Close();
+            }
+
             File.WriteAllText(path, json);
         }
 
