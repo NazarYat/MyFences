@@ -4,6 +4,7 @@ using MyFences.Windows;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Media;
 
 namespace MyFences.ViewModels
 {
@@ -101,11 +102,20 @@ namespace MyFences.ViewModels
             if (string.IsNullOrEmpty(itemPath) || (!File.Exists(itemPath) && !Directory.Exists(itemPath)))
                 return null;
 
+            ImageSource? icon = null;
+
+            try
+            {
+                icon = IconHelper.GetSystemIconMaxResolution(itemPath);
+            }
+            catch (Exception e)
+            {
+            }
 
             return new ItemViewModel
             {
                 Path = itemPath,
-                Icon = IconHelper.GetSystemIconMaxResolution(itemPath)
+                Icon = icon
             };
         }
 

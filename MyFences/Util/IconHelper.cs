@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -35,6 +32,7 @@ namespace MyFences.Util
             public string szTypeName;
         }
 
+        private const uint SHGFI_SYSICONINDEX = 0x000004000;
         private const uint SHGFI_ICON = 0x000000100;
         private const uint SHGFI_LARGEICON = 0x000000000; // 32x32
         private const uint SHGFI_SMALLICON = 0x000000001; // 16x16
@@ -53,7 +51,9 @@ namespace MyFences.Util
 
         private enum SHIL : int
         {
-            SHIL_JUMBO = 0x4 // 256x256
+            SHIL_LARGE = 0x0,
+            SHIL_EXTRALARGE = 0x2,
+            SHIL_JUMBO = 0x4
         }
 
         private const int ILD_TRANSPARENT = 0x00000001;
@@ -69,60 +69,88 @@ namespace MyFences.Util
         // ---------------------------
         public static ImageSource? GetSystemIconMaxResolution(string path)
         {
-            // Attempt 256x256 jumbo icon first
-            var shinfo = new SHFILEINFO();
-            SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON);
+            if (string.IsNullOrEmpty(path))
+                return null;
 
-            if (shinfo.iIcon >= 0)
+            var shinfo = new SHFILEINFO();
+
+            // Only try jumbo for executables or icons
+            string ext = System.IO.Path.GetExtension(path)?.ToLowerInvariant() ?? "";
+            bool canUseJumbo = ext == ".exe" || ext == ".ico" || ext == ".dll";
+
+            if (canUseJumbo)
             {
-                Guid iidImageList = typeof(IImageList).GUID;
-                if (SHGetImageList((int)SHIL.SHIL_JUMBO, ref iidImageList, out IImageList iml) == 0)
+                try
                 {
-                    if (iml.GetIcon(shinfo.iIcon, ILD_TRANSPARENT, out IntPtr hIcon) == 0 && hIcon != IntPtr.Zero)
+                    Guid iidImageList = typeof(IImageList).GUID;
+                    if (SHGetImageList((int)SHIL.SHIL_JUMBO, ref iidImageList, out IImageList iml) == 0)
                     {
-                        var img = Imaging.CreateBitmapSourceFromHIcon(
-                            hIcon,
-                            Int32Rect.Empty,
-                            BitmapSizeOptions.FromEmptyOptions());
-                        img.Freeze();
-                        DestroyIcon(hIcon);
-                        return img;
+                        SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX);
+                        if (shinfo.iIcon >= 0 && iml.GetIcon(shinfo.iIcon, ILD_TRANSPARENT, out IntPtr hIcon) == 0 && hIcon != IntPtr.Zero)
+                        {
+                            try
+                            {
+                                var img = Imaging.CreateBitmapSourceFromHIcon(
+                                    hIcon,
+                                    Int32Rect.Empty,
+                                    BitmapSizeOptions.FromEmptyOptions());
+                                img.Freeze();
+                                return img;
+                            }
+                            finally
+                            {
+                                DestroyIcon(hIcon);
+                            }
+                        }
                     }
+                }
+                catch
+                {
+                    // fallback silently
                 }
             }
 
-            // Fallback: 48x48 extra large (if jumbo failed)
-            const int SHIL_EXTRALARGE = 0x2;
-            Guid iidEx = typeof(IImageList).GUID;
-            if (SHGetImageList(SHIL_EXTRALARGE, ref iidEx, out IImageList imlEx) == 0)
+            // Fallback: large icon (32x32)
+            SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON);
+            if (shinfo.hIcon != IntPtr.Zero)
             {
-                if (imlEx.GetIcon(shinfo.iIcon, ILD_TRANSPARENT, out IntPtr hIconEx) == 0 && hIconEx != IntPtr.Zero)
+                try
                 {
                     var img = Imaging.CreateBitmapSourceFromHIcon(
-                        hIconEx,
+                        shinfo.hIcon,
                         Int32Rect.Empty,
                         BitmapSizeOptions.FromEmptyOptions());
                     img.Freeze();
-                    DestroyIcon(hIconEx);
                     return img;
+                }
+                finally
+                {
+                    DestroyIcon(shinfo.hIcon);
                 }
             }
 
-            // Fallback: small/large icon using SHGetFileInfo
-            uint flags = SHGFI_ICON | SHGFI_LARGEICON;
-            SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), flags);
+            // Fallback: small icon (16x16)
+            SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
             if (shinfo.hIcon != IntPtr.Zero)
             {
-                var img = Imaging.CreateBitmapSourceFromHIcon(
-                    shinfo.hIcon,
-                    Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
-                img.Freeze();
-                DestroyIcon(shinfo.hIcon);
-                return img;
+                try
+                {
+                    var img = Imaging.CreateBitmapSourceFromHIcon(
+                        shinfo.hIcon,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromEmptyOptions());
+                    img.Freeze();
+                    return img;
+                }
+                finally
+                {
+                    DestroyIcon(shinfo.hIcon);
+                }
             }
 
             return null;
         }
+
+
     }
 }
