@@ -10,8 +10,6 @@ namespace MyFences.ViewModels
     {
         public FenceViewModel() : base() { }
 
-        private readonly string[] _extensionsToHide = new string[] { ".lnk", ".exe" };
-        private readonly Window _window;
         public Fence Fence { get; set; } = null!;
         public ObservableCollection<ItemViewModel> Items { get; set; } = new ObservableCollection<ItemViewModel>();
 
@@ -38,9 +36,8 @@ namespace MyFences.ViewModels
             }
         }
 
-        public FenceViewModel(ApplicationViewModel appVM, Fence model, Window window) : base(appVM)
+        public FenceViewModel(ApplicationViewModel appVM, Fence model, Window window) : base(appVM, window)
         {
-            _window = window;
             Fence = model;
 
             CheckItemsExist();
@@ -77,6 +74,8 @@ namespace MyFences.ViewModels
                 if (itemVM != null)
                     Items.Add(itemVM);
             }
+            
+            StartTrackingFiles();
 
             NotifyOfPropertyChanged(nameof(Items));
         }
@@ -90,25 +89,8 @@ namespace MyFences.ViewModels
             return new ItemViewModel
             {
                 Path = itemPath,
-                Name = GetItemName(itemPath),
                 Icon = IconHelper.GetHighQualityIcon(itemPath, 256)
             };
-        }
-
-        private string GetItemName(string itemPath)
-        {
-            var isFolder = Directory.Exists(itemPath);
-
-            var t = Path.GetExtension(itemPath).ToLower();
-
-            var r = _extensionsToHide.Contains(t);
-
-            return isFolder ?
-                    new DirectoryInfo(itemPath).Name :
-                    _extensionsToHide.Contains(Path.GetExtension(itemPath).ToLower()) ?
-                        Path.GetFileNameWithoutExtension(itemPath) :
-                        Path.GetFileName(itemPath);
-
         }
 
         public void AddFile(string path)
@@ -128,6 +110,8 @@ namespace MyFences.ViewModels
             if (newVm == null) return;
 
             Items.Add(newVm);
+
+            StartTrackingFile(path);
 
             NotifyOfPropertyChanged(nameof(Items));
 
@@ -155,6 +139,7 @@ namespace MyFences.ViewModels
 
             window.DataContext = new SetupViewModel(
                 _applicationViewModel,
+                window,
                 Fence,
                 () =>
                 {
@@ -180,6 +165,70 @@ namespace MyFences.ViewModels
         {
             _window.Close();
             _applicationViewModel.DeleteFence(Fence);
+        }
+
+        private readonly Dictionary<string, FileSystemWatcher> Watchers = new Dictionary<string, FileSystemWatcher>(); // folder / watcher
+
+        private void StartTrackingFiles()
+        {
+            foreach (var file in Items)
+            {
+                StartTrackingFile(file.Path);
+            }
+        }
+        private void StartTrackingFile(string path)
+        {
+            var directory = Path.GetDirectoryName(path);
+            
+            if (directory == null) return;
+
+            if (Watchers.ContainsKey(directory)) return;
+
+            StartTrackingDirectory(directory);
+        }
+        private void StartTrackingDirectory(string path)
+        {
+            FileSystemWatcher watcher = new FileSystemWatcher();
+            watcher.Path = path;
+            watcher.Filter = "*.*";
+            watcher.IncludeSubdirectories = false;
+
+            watcher.Deleted += OnDeleted;
+            watcher.Renamed += OnRenamed;
+            
+            watcher.EnableRaisingEvents = true;
+
+            Watchers.Add(path, watcher);
+        }
+        private void OnDeleted(object sender, FileSystemEventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var item = Items.FirstOrDefault(i => i.Path == e.FullPath);
+
+                if (item == null) return;
+
+                RemoveFile(item);
+            });
+        }
+        private void OnRenamed(object sender, RenamedEventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Fence.Items[Fence.Items.IndexOf(e.OldFullPath)] = e.FullPath;
+
+                foreach (var item in Items)
+                {
+                    if (item.Path == e.OldFullPath)
+                    {
+                        item.Path = e.FullPath;
+                        break;
+                    }
+                }
+
+                NotifyOfPropertyChanged(nameof(Items));
+                _applicationViewModel.SaveData();
+            });
         }
     }
 }

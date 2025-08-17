@@ -449,7 +449,7 @@ namespace MyFences.ViewModels
         }
 
 
-        public SetupViewModel(ApplicationViewModel applicationData, Fence fence, Action? settingChangedCallback = null) : base(applicationData)
+        public SetupViewModel(ApplicationViewModel applicationData, Window window, Fence fence, Action? settingChangedCallback = null) : base(applicationData, window)
         {
             Fence = fence;
             _settingChangedCallback = settingChangedCallback;
@@ -481,6 +481,11 @@ namespace MyFences.ViewModels
 
                 f.NotifyViewModelChanged();
             }
+        }
+
+        protected override void OnWindowClose()
+        {
+            _applicationViewModel.SaveData();
         }
     }
 }

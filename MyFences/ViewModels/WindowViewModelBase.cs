@@ -1,12 +1,25 @@
-﻿namespace MyFences.ViewModels
+﻿using System.Windows;
+
+namespace MyFences.ViewModels
 {
     public abstract class WindowViewModelBase : ViewModelBase
     {
         public readonly ApplicationViewModel _applicationViewModel;
-        public WindowViewModelBase(ApplicationViewModel appVm)
+        protected readonly Window _window;
+        public WindowViewModelBase(ApplicationViewModel appVm, Window window)
         {
             _applicationViewModel = appVm;
+            _window = window;
+            _window.Closed += (s, e) =>
+            {
+                OnWindowClose();
+            };
         }
         public WindowViewModelBase() { _applicationViewModel = new ApplicationViewModel(); }
+
+        protected virtual void OnWindowClose()
+        {
+
+        }
     }
 }

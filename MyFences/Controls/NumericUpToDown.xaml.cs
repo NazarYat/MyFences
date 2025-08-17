@@ -113,5 +113,11 @@ namespace MyFences.Controls
             if (Value < Minimum) Value = Minimum;
             if (Value > Maximum) Value = Maximum;
         }
+
+        private void PART_TextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            textBox?.SelectAll();
+        }
     }
 }

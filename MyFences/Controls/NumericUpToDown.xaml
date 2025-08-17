@@ -13,7 +13,8 @@
                  Style="{Binding TextBoxStyle, RelativeSource={RelativeSource AncestorType=UserControl}}"
                  PreviewTextInput="TextBox_PreviewTextInput"
                  PreviewKeyDown="TextBox_PreviewKeyDown"
-                 TextChanged="PART_TextBox_TextChanged"/>
+                 TextChanged="PART_TextBox_TextChanged"
+                 GotKeyboardFocus="PART_TextBox_GotKeyboardFocus"/>
 
         <!--<StackPanel Grid.Column="1" Orientation="Vertical">
             <Button Content="▲" Click="Up_Click" Padding="0" Height="14"/>

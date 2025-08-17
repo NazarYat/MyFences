@@ -42,7 +42,8 @@ namespace MyFences.Windows
                 UseAeroCaptionButtons = false
             };
 
-            WindowChrome.SetWindowChrome(this, chrome); 
+            WindowChrome.SetWindowChrome(this, chrome);
+
         }
 
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -110,13 +111,22 @@ namespace MyFences.Windows
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
         private void FenceWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var hwnd = new WindowInteropHelper(this).Handle;
+            try
+            {
+                SetWindowLayout();
+         
+                var hwnd = new WindowInteropHelper(this).Handle;
 
-            int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
-            SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+                SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+                SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-            if (ViewModel != null && ViewModel.Fence.UseBlur) EnableBlur();
+                if (ViewModel != null && ViewModel.Fence.UseBlur) EnableBlur();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An unhandled error occured: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         private void EnableBlur()
         {
@@ -270,26 +280,33 @@ namespace MyFences.Windows
 
         private void StackPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton != MouseButton.Left) return;
-
-            if (sender is FrameworkElement element && element.DataContext is ItemViewModel itemViewModel)
+            try
             {
-                if (DateTime.Now - _lastItemMouseDown < TimeSpan.FromMilliseconds(300) && itemViewModel.Path == _lastMouseDownItem)
+                if (e.ChangedButton != MouseButton.Left) return;
+
+                if (sender is FrameworkElement element && element.DataContext is ItemViewModel itemViewModel)
                 {
-
-                    _lastMouseDownItem = itemViewModel.Path;
-
-                    Process.Start(new ProcessStartInfo
+                    if (DateTime.Now - _lastItemMouseDown < TimeSpan.FromMilliseconds(300) && itemViewModel.Path == _lastMouseDownItem)
                     {
-                        FileName = itemViewModel.Path,
-                        UseShellExecute = true
-                    });
+
+                        _lastMouseDownItem = itemViewModel.Path;
+
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = itemViewModel.Path,
+                            UseShellExecute = true
+                        });
+                    }
+                    else
+                    {
+                        _lastMouseDownItem = itemViewModel.Path;
+                        _lastItemMouseDown = DateTime.Now;
+                    }
                 }
-                else
-                {
-                    _lastMouseDownItem = itemViewModel.Path;
-                    _lastItemMouseDown = DateTime.Now;
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An unhandled error                 MessageBox.Show($\"An unhandled error occured: {{ex.Message}}\", \"Error\", MessageBoxButton.OK, MessageBoxImage.Error);\r\n: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -471,22 +488,39 @@ namespace MyFences.Windows
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            SetWindowLayout();
+            SaveWindowLayout();
         }
 
         private void Window_LocationChanged(object sender, EventArgs e)
         {
-            SetWindowLayout();
+            SaveWindowLayout();
         }
-
+        private bool _layoutSavingLock = false;
         private void SetWindowLayout()
         {
+            _layoutSavingLock = true;
             if (ViewModel?.Fence == null) return;
+
+            Left = ViewModel.Fence.Left;
+            Top = ViewModel.Fence.Top;
+            Width = ViewModel.Fence.Width;
+            Height = ViewModel.Fence.Height;
+            _layoutSavingLock = false;
+        }
+        private void SaveWindowLayout()
+        {
+            if (_layoutSavingLock) return;
+
+            if (ViewModel?.Fence == null) return;
+
+            if (!(Width > 0 && Height > 0)) return;
 
             ViewModel.Fence.Left = Left;
             ViewModel.Fence.Top = Top;
             ViewModel.Fence.Width = Width;
             ViewModel.Fence.Height = Height;
+
+            ViewModel._applicationViewModel.SaveData();
         }
     }
 }

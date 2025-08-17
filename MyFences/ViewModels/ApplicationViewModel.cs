@@ -57,15 +57,60 @@ namespace MyFences.ViewModels
             }
         }
 
+        private readonly object _lock = new();
+        private Task? _task = null;
+        private bool _needSaveData = false;
+        private CancellationTokenSource? _cts = null;
+
         public void SaveData()
         {
-            try
+            lock (_lock)
             {
-                SerializationUtil.SaveToFile(settingsFilePath, AppData);
+                _needSaveData = true;
+
+                if (_task != null && !_task.IsCompleted)
+                    return;
+
+                _cts = new CancellationTokenSource();
+                _task = Task.Run(() => SaveDataInternalAsync(_cts.Token));
             }
-            catch (Exception ex)
+        }
+
+        private async Task SaveDataInternalAsync(CancellationToken token)
+        {
+            while (true)
             {
-                MessageBox.Show($"Failed to save data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                bool saveNow;
+                lock (_lock)
+                {
+                    saveNow = _needSaveData;
+                    _needSaveData = false;
+                }
+
+                if (!saveNow || token.IsCancellationRequested)
+                    break;
+
+                try
+                {
+                    await Task.Delay(3000, token);
+                    if (token.IsCancellationRequested) break;
+
+                    await SerializationUtil.SaveToFileAsync(settingsFilePath, AppData);
+                }
+                catch (Exception ex)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show(
+                            $"Failed to save data: {ex.Message}",
+                            "Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error
+                        );
+                    });
+
+                    return;
+                }
             }
         }
 

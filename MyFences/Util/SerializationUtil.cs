@@ -8,7 +8,7 @@ namespace MyFences.Util
         public static T? DeserializeFormJson<T>(string json) => JsonConvert.DeserializeObject<T>(json);
         public static string SerializeToJson(object obj) => JsonConvert.SerializeObject(obj);
 
-        public static void SaveToFile(string path, object obj)
+        public static async Task SaveToFileAsync(string path, object obj)
         {
             string json = SerializeToJson(obj);
 
@@ -22,7 +22,7 @@ namespace MyFences.Util
                 File.Create(path).Close();
             }
 
-            File.WriteAllText(path, json);
+            await File.WriteAllTextAsync(path, json);
         }
 
         public static T? LoadFromFile<T>(string path)
