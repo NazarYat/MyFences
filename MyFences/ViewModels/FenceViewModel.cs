@@ -215,16 +215,17 @@ namespace MyFences.ViewModels
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                Fence.Items[Fence.Items.IndexOf(e.OldFullPath)] = e.FullPath;
+                var index = Fence.Items.IndexOf(e.OldFullPath);
 
-                foreach (var item in Items)
-                {
-                    if (item.Path == e.OldFullPath)
-                    {
-                        item.Path = e.FullPath;
-                        break;
-                    }
-                }
+                if (index < 0) return;
+
+                Fence.Items[index] = e.FullPath;
+
+                var item = Items.FirstOrDefault(i => i.Path == e.OldFullPath);
+
+                if (item == null) return;
+
+                item.Path = e.FullPath;
 
                 NotifyOfPropertyChanged(nameof(Items));
                 _applicationViewModel.SaveData();
