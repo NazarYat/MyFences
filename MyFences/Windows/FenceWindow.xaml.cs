@@ -130,6 +130,7 @@ namespace MyFences.Windows
         }
         private void EnableBlur()
         {
+            UseBlur = true;
             var windowHelper = new WindowInteropHelper(this);
             var accent = new AccentPolicy
             {
@@ -153,6 +154,8 @@ namespace MyFences.Windows
 
         private void DisableBlur()
         {
+            UseBlur = false;
+
             var windowHelper = new WindowInteropHelper(this);
             var accent = new AccentPolicy
             {
@@ -509,6 +512,8 @@ namespace MyFences.Windows
         }
         private void SaveWindowLayout()
         {
+            if (!IsLoaded) return;
+
             if (_layoutSavingLock) return;
 
             if (ViewModel?.Fence == null) return;
@@ -521,6 +526,11 @@ namespace MyFences.Windows
             ViewModel.Fence.Height = Height;
 
             ViewModel._applicationViewModel.SaveData();
+        }
+
+        private void Window_Deactivated(object sender, EventArgs e)
+        {
+            FilesListView.SelectedItems.Clear();
         }
     }
 }

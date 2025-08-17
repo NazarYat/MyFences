@@ -14,10 +14,18 @@ namespace MyFences.ViewModels
             {
                 OnWindowClose();
             };
+            _window.Loaded += (s, e) =>
+            {
+                OnWindowLoad();
+            };
         }
         public WindowViewModelBase() { _applicationViewModel = new ApplicationViewModel(); }
 
         protected virtual void OnWindowClose()
+        {
+
+        }
+        protected virtual void OnWindowLoad()
         {
 
         }

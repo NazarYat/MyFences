@@ -1,4 +1,5 @@
 ﻿using MyFences.Models;
+using MyFences.Util;
 using MyFences.Windows;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -39,12 +40,19 @@ namespace MyFences.ViewModels
         public FenceViewModel(ApplicationViewModel appVM, Fence model, Window window) : base(appVM, window)
         {
             Fence = model;
+        }
 
+        protected override void OnWindowLoad()
+        {
             CheckItemsExist();
             LoadItems();
         }
 
-        private void CheckItemsExist()
+        private async void CheckItemsExist()
+        {
+            await CheckItemsExistAsync();
+        }
+        private Task CheckItemsExistAsync()
         {
             if (Fence == null || Fence.Items == null)
                 Fence = new Fence();
@@ -62,9 +70,17 @@ namespace MyFences.ViewModels
             }
 
             _applicationViewModel.SaveData();
+
+            return Task.CompletedTask;
         }
 
-        private void LoadItems()
+        private async void LoadItems()
+        {
+            await LoadItemsAsync();
+
+            NotifyOfPropertyChanged(nameof(Items));
+        }
+        private Task LoadItemsAsync()
         {
             Items.Clear();
 
@@ -74,10 +90,10 @@ namespace MyFences.ViewModels
                 if (itemVM != null)
                     Items.Add(itemVM);
             }
-            
+
             StartTrackingFiles();
 
-            NotifyOfPropertyChanged(nameof(Items));
+            return Task.CompletedTask;
         }
 
         private ItemViewModel? CreateItemViewModel(string itemPath)
@@ -89,7 +105,7 @@ namespace MyFences.ViewModels
             return new ItemViewModel
             {
                 Path = itemPath,
-                Icon = IconHelper.GetHighQualityIcon(itemPath, 256)
+                Icon = IconHelper.GetSystemIconMaxResolution(itemPath)
             };
         }
 
@@ -230,6 +246,16 @@ namespace MyFences.ViewModels
                 NotifyOfPropertyChanged(nameof(Items));
                 _applicationViewModel.SaveData();
             });
+        }
+
+        public override void NotifyViewModelChanged()
+        {
+            base.NotifyViewModelChanged();
+
+            if (this._window is FenceWindow FV)
+            {
+                FV.UseBlur = Fence.UseBlur;
+            }
         }
     }
 }

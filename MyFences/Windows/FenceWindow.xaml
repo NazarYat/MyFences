@@ -10,8 +10,8 @@
         WindowStyle="None"
         ResizeMode="CanResize"
         ShowInTaskbar="False"
-        Background="Transparent"
         AllowsTransparency="True"
+        Background="Transparent"
         Loaded="FenceWindow_Loaded"
         PreviewMouseDown="Window_PreviewMouseDown"
         mc:Ignorable="d"
@@ -19,7 +19,8 @@
         BorderBrush="{Binding Fence.WindowBorderColor, Converter={StaticResource ColorToBrushConverter}}"
         BorderThickness="{Binding Fence.BorderThickness}"
         SizeChanged="Window_SizeChanged"
-        LocationChanged="Window_LocationChanged">
+        LocationChanged="Window_LocationChanged"
+        Deactivated="Window_Deactivated">
 
     <Window.Resources>
         <util:BindingProxy x:Key="Proxy" Data="{Binding}" />
@@ -194,7 +195,7 @@
                         </Setter>
                     </Style>
                 </ListView.ItemContainerStyle>
-                
+
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel HorizontalAlignment="Center"
@@ -208,7 +209,10 @@
                                    Width="{Binding Data.Fence.ItemIconSize, Source={StaticResource Proxy}}"
                                    Height="{Binding Data.Fence.ItemIconSize, Source={StaticResource Proxy}}"
                                    Margin="0 5 0 0"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                   RenderOptions.BitmapScalingMode="Unspecified"
+                                   SnapsToDevicePixels="True"
+                                   UseLayoutRounding="True"
+                                   Stretch="Uniform"/>
 
                             <Grid>
                                 <!-- Shadow/outline layer -->
@@ -233,6 +237,7 @@
                                            HorizontalAlignment="Center"
                                            TextAlignment="Center"
                                            VerticalAlignment="Center"
+                                           Margin="5, 5"
                                            FontSize="{Binding Data.Fence.ItemFontSize, Source={StaticResource Proxy}}" SnapsToDevicePixels="True"/>
                             </Grid>
                         </StackPanel>

@@ -19,12 +19,16 @@ namespace MyFences.ViewModels
         {
             AppData = SerializationUtil.LoadFromFile<ApplicationData>(settingsFilePath) ?? new ApplicationData();
 
+            CreateFenceWindows();
+
+            Task.Run(StartServer);
+        }
+        private void CreateFenceWindows()
+        {
             foreach (var fence in AppData.Fences)
             {
                 CreateFenceWindow(fence);
             }
-
-            Task.Run(StartServer);
         }
         private async Task StartServer()
         {
