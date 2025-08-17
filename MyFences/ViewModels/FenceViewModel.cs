@@ -41,15 +41,16 @@ namespace MyFences.ViewModels
         public FenceViewModel(ApplicationViewModel appVM, Fence model, Window window) : base(appVM, window)
         {
             Fence = model;
+            Task.Run(OnWindowLoadedAsync);
         }
 
-        protected override void OnWindowLoad()
+        private async Task OnWindowLoadedAsync()
         {
-            CheckItemsExist();
-            LoadItems();
+            await CheckItemsExist();
+            await LoadItemsAsync();
         }
 
-        private async void CheckItemsExist()
+        private async Task CheckItemsExist()
         {
             await CheckItemsExistAsync();
         }
@@ -75,24 +76,25 @@ namespace MyFences.ViewModels
             return Task.CompletedTask;
         }
 
-        private async void LoadItems()
-        {
-            await LoadItemsAsync();
-
-            NotifyOfPropertyChanged(nameof(Items));
-        }
         private Task LoadItemsAsync()
         {
-            Items.Clear();
+            var items = new List<ItemViewModel>();
 
             foreach (var itemPath in Fence.Items)
             {
                 var itemVM = CreateItemViewModel(itemPath);
                 if (itemVM != null)
-                    Items.Add(itemVM);
+                    items.Add(itemVM);
             }
 
-            StartTrackingFiles();
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Items = new ObservableCollection<ItemViewModel>(items);
+
+                StartTrackingFiles();
+
+                NotifyOfPropertyChanged(nameof(Items));
+            });
 
             return Task.CompletedTask;
         }
