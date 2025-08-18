@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,8 +20,13 @@ namespace MyFences.Controls
     /// <summary>
     /// Interaction logic for ThicknessEditor.xaml
     /// </summary>
-    public partial class ThicknessEditor : UserControl
+    public partial class ThicknessEditor : UserControl, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
         public static readonly DependencyProperty TextBoxStyleProperty = DependencyProperty.Register(nameof(TextBoxStyle), typeof(Style), typeof(ThicknessEditor), new PropertyMetadata(null));
 
         public Style TextBoxStyle
@@ -68,7 +75,13 @@ namespace MyFences.Controls
             get => Value.Bottom;
             set => Value = new Thickness(Value.Left, Value.Top, Value.Right, value);
         }
-
+        public void ValueChanged()
+        {
+            OnPropertyChanged(nameof(Left));
+            OnPropertyChanged(nameof(Top));
+            OnPropertyChanged(nameof(Right));
+            OnPropertyChanged(nameof(Bottom));
+        }
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (ThicknessEditor)d;
@@ -79,6 +92,8 @@ namespace MyFences.Controls
             control.Top = thickness.Top;
             control.Right = thickness.Right;
             control.Bottom = thickness.Bottom;
+
+            control.ValueChanged();
         }
     }
 }
