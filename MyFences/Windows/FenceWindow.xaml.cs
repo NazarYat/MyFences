@@ -1,5 +1,6 @@
 ﻿using MyFences.Util;
 using MyFences.ViewModels;
+using System.Collections;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -45,7 +46,6 @@ namespace MyFences.Windows
             WindowChrome.SetWindowChrome(this, chrome);
 
         }
-
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed && e.ChangedButton == MouseButton.Left)
@@ -101,14 +101,23 @@ namespace MyFences.Windows
             }
         }
 
-        private const int GWL_EXSTYLE = -20;
-        private const int WS_EX_TOOLWINDOW = 0x00000080;
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr FindWindowEx(IntPtr hP, IntPtr hC, string sC,
+    string sW);
 
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(EnumedWindow lpEnumFunc, ArrayList
+        lParam);
 
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+        public delegate bool EnumedWindow(IntPtr handleWindow, ArrayList handles);
+
+        public static bool GetWindowHandle(IntPtr windowHandle, ArrayList
+        windowHandles)
+        {
+            windowHandles.Add(windowHandle);
+            return true;
+        }
         private void FenceWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -117,15 +126,31 @@ namespace MyFences.Windows
          
                 var hwnd = new WindowInteropHelper(this).Handle;
 
-                int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-                SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
-                SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                SetAsDesktopChild();
 
                 if (ViewModel != null && ViewModel.Fence.UseBlur) EnableBlur();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An unhandled error occured: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void SetAsDesktopChild()
+        {
+            ArrayList windowHandles = new ArrayList();
+            EnumedWindow callBackPtr = GetWindowHandle;
+            EnumWindows(callBackPtr, windowHandles);
+
+            foreach (IntPtr windowHandle in windowHandles)
+            {
+                IntPtr hNextWin = FindWindowEx(windowHandle, IntPtr.Zero,
+                "SHELLDLL_DefView", null);
+                if (hNextWin != IntPtr.Zero)
+                {
+                    var interop = new WindowInteropHelper(this);
+                    interop.EnsureHandle();
+                    interop.Owner = hNextWin;
+                }
             }
         }
         private void EnableBlur()
@@ -216,10 +241,6 @@ namespace MyFences.Windows
         private const int SWP_NOACTIVATE = 0x0010;
         private static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
-            int X, int Y, int cx, int cy, uint uFlags);
-
         private void ListView_DragOver(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -263,7 +284,8 @@ namespace MyFences.Windows
         {
             base.OnStateChanged(e);
 
-            if (WindowState == WindowState.Maximized)
+            if (WindowState == WindowState.Maximized ||
+                WindowState == WindowState.Minimized)
                 WindowState = WindowState.Normal;
         }
 
@@ -309,7 +331,7 @@ namespace MyFences.Windows
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An unhandled error                 MessageBox.Show($\"An unhandled error occured: {{ex.Message}}\", \"Error\", MessageBoxButton.OK, MessageBoxImage.Error);\r\n: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"An unhandled error occured", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -373,7 +395,6 @@ namespace MyFences.Windows
         {
             return VisualTreeHelper.GetDpi(this);
         }
-
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (!UseGrid) return IntPtr.Zero;
