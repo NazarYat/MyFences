@@ -459,6 +459,15 @@ namespace MyFences.Windows
             return new Point(p.X, p.Y);
         }
 
+        private Point GetRelativeMousePosition()
+        {
+            var absoluteMousePos = GetAbsoluteMousePosition();
+
+            var windowTopLeft = this.PointToScreen(new Point(0, 0));
+
+            return new Point(absoluteMousePos.X - windowTopLeft.X, absoluteMousePos.Y - windowTopLeft.Y);
+        }
+
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (!_isMoving)
@@ -476,11 +485,7 @@ namespace MyFences.Windows
 
                     var newPoint = GetAbsoluteMousePosition();
 
-                    if (_mouseDownPoint.X == newPoint.X && _mouseDownPoint.Y == newPoint.Y)
-                        return;
-
                     Drag(new Point(newPoint.X - _mouseDownPoint.X, newPoint.Y - _mouseDownPoint.Y));
-
                 });
             }
 
@@ -525,7 +530,7 @@ namespace MyFences.Windows
         }
         public void StartDrag()
         {
-            _mouseDownPoint = GetAbsoluteMousePosition();
+            _mouseDownPoint = GetRelativeMousePosition();
             _isMoving = true;
             _hookID = SetHook(_proc);
         }
@@ -534,7 +539,7 @@ namespace MyFences.Windows
             _isMoving = false;
             RemoveHook(_hookID);
         }
-        private void Drag(Point vector)
+        private void Drag(Point position)
         {
             unsafe
             {
@@ -548,24 +553,22 @@ namespace MyFences.Windows
                 double width = Width;
                 double height = Height;
 
-                double left = Left + vector.X;
-                double top = Top + vector.Y;
+                double left = position.X / scaleX;
+                double top = position.Y / scaleY;
 
-                double snappedLeft = SnapToNearest(left, xStep, _margin.Left,
-                    _margin.Left, screen.Right - _margin.Right - width);
-                double snappedTop = SnapToNearest(top, yStep, _margin.Top,
-                    _margin.Top, screen.Bottom - _margin.Bottom - height);
+                double snappedLeft = left;
+                double snappedTop = top;
 
-                var newLeft = snappedLeft;
-                var newTop = snappedTop;
-
-                if (Left != newLeft || Top != newTop)
+                if (UseGrid)
                 {
-                    _mouseDownPoint = GetAbsoluteMousePosition();
+                    snappedLeft = SnapToNearest(left, xStep, _margin.Left,
+                        _margin.Left, screen.Right - _margin.Right - width);
+                    snappedTop = SnapToNearest(top, yStep, _margin.Top,
+                        _margin.Top, screen.Bottom - _margin.Bottom - height);
                 }
 
-                Left = newLeft;
-                Top = newTop;
+                Left = snappedLeft;
+                Top = snappedTop;
                 Width = width;
                 Height = height;
             }
