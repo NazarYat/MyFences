@@ -46,11 +46,7 @@ namespace MyFences.Windows
             WindowChrome.SetWindowChrome(this, chrome);
 
         }
-        private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed && e.ChangedButton == MouseButton.Left)
-                this.DragMove(); // Makes the window draggable
-        }
+        
 
         private DateTime _lastClick = DateTime.Now;
         private void NameTextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -118,6 +114,17 @@ namespace MyFences.Windows
             windowHandles.Add(windowHandle);
             return true;
         }
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
+
+        [DllImport("user32.dll")]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
+            int X, int Y, int cx, int cy, uint uFlags);
         private void FenceWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -125,6 +132,15 @@ namespace MyFences.Windows
                 SetWindowLayout();
          
                 var hwnd = new WindowInteropHelper(this).Handle;
+
+                int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+                SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+                SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+                Activated += (s, e) =>
+                {
+                    SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                };
 
                 SetAsDesktopChild();
 
@@ -395,6 +411,165 @@ namespace MyFences.Windows
         {
             return VisualTreeHelper.GetDpi(this);
         }
+        
+        private const int WH_MOUSE_LL = 14;
+        private static IntPtr _hookID = IntPtr.Zero;
+        private LowLevelMouseProc _proc = null!;
+        private const int WM_LBUTTONUP = 0x0202;
+        protected override void OnClosed(EventArgs e)
+        {
+            UnhookWindowsHookEx(_hookID);
+            base.OnClosed(e);
+        }
+
+        private IntPtr SetHook(LowLevelMouseProc proc)
+        {
+            _proc = HookCallback; // keep delegate alive
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule curModule = curProcess.MainModule)
+            {
+                return SetWindowsHookEx(WH_MOUSE_LL, _proc,
+                    GetModuleHandle(curModule.ModuleName), 0);
+            }
+        }
+        private void RemoveHook(IntPtr hook)
+        {
+            if (_hookID != IntPtr.Zero)
+            {
+                UnhookWindowsHookEx(_hookID);
+                _hookID = IntPtr.Zero;
+            }
+        }
+
+        private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GetCursorPos(out POINT lpPoint);
+
+        private Point GetAbsoluteMousePosition()
+        {
+            GetCursorPos(out var p);
+            return new Point(p.X, p.Y);
+        }
+
+        private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (!_isMoving)
+                return CallNextHookEx(_hookID, nCode, wParam, lParam);
+
+            if (nCode >= 0)
+            {
+                Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    if (wParam == (IntPtr)WM_LBUTTONUP)
+                    {
+                        EndDrag();
+                        return;
+                    }
+
+                    var newPoint = GetAbsoluteMousePosition();
+
+                    if (_mouseDownPoint.X == newPoint.X && _mouseDownPoint.Y == newPoint.Y)
+                        return;
+
+                    Drag(new Point(newPoint.X - _mouseDownPoint.X, newPoint.Y - _mouseDownPoint.Y));
+
+                });
+            }
+
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MSLLHOOKSTRUCT
+        {
+            public Point pt;
+            public uint mouseData;
+            public uint flags;
+            public uint time;
+            public IntPtr dwExtraInfo;
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook,
+            LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode,
+            IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+
+        private bool _isMoving = false;
+        private Point _mouseDownPoint = new Point();
+
+        private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed && e.ChangedButton == MouseButton.Left)
+            {
+                StartDrag();
+            }
+        }
+        public void StartDrag()
+        {
+            _mouseDownPoint = GetAbsoluteMousePosition();
+            _isMoving = true;
+            _hookID = SetHook(_proc);
+        }
+        public void EndDrag()
+        {
+            _isMoving = false;
+            RemoveHook(_hookID);
+        }
+        private void Drag(Point vector)
+        {
+            unsafe
+            {
+                var screen = GetScreenBounds();
+                double xStep = GetXStep(screen.Width);
+                double yStep = GetYStep(screen.Height);
+                var dpi = GetDpi();
+                double scaleX = dpi.DpiScaleX;
+                double scaleY = dpi.DpiScaleY;
+
+                double width = Width;
+                double height = Height;
+
+                double left = Left + vector.X;
+                double top = Top + vector.Y;
+
+                double snappedLeft = SnapToNearest(left, xStep, _margin.Left,
+                    _margin.Left, screen.Right - _margin.Right - width);
+                double snappedTop = SnapToNearest(top, yStep, _margin.Top,
+                    _margin.Top, screen.Bottom - _margin.Bottom - height);
+
+                var newLeft = snappedLeft;
+                var newTop = snappedTop;
+
+                if (Left != newLeft || Top != newTop)
+                {
+                    _mouseDownPoint = GetAbsoluteMousePosition();
+                }
+
+                Left = newLeft;
+                Top = newTop;
+                Width = width;
+                Height = height;
+            }
+        }
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (!UseGrid) return IntPtr.Zero;
@@ -409,27 +584,6 @@ namespace MyFences.Windows
 
             if (msg == WM_MOVING)
             {
-                unsafe
-                {
-                    RECT* rect = (RECT*)lParam;
-
-                    double width = (rect->Right - rect->Left) / scaleX;
-                    double height = (rect->Bottom - rect->Top) / scaleY;
-
-                    double left = rect->Left / scaleX;
-                    double top = rect->Top / scaleY;
-
-                    double snappedLeft = SnapToNearest(left, xStep, _margin.Left,
-                        _margin.Left, screen.Right - _margin.Right - width);
-                    double snappedTop = SnapToNearest(top, yStep, _margin.Top,
-                        _margin.Top, screen.Bottom - _margin.Bottom - height);
-
-                    rect->Left = (int)(snappedLeft * scaleX);
-                    rect->Top = (int)(snappedTop * scaleY);
-                    rect->Right = (int)((snappedLeft + width) * scaleX);
-                    rect->Bottom = (int)((snappedTop + height) * scaleY);
-                }
-
                 handled = true;
             }
             else if (msg == WM_SIZING)
