@@ -2,6 +2,7 @@
 using MyFences.ViewModels;
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -335,6 +336,7 @@ namespace MyFences.Windows
                         Process.Start(new ProcessStartInfo
                         {
                             FileName = itemViewModel.Path,
+                            WorkingDirectory = Path.GetDirectoryName(itemViewModel.Path),
                             UseShellExecute = true
                         });
                     }
