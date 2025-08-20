@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="MyFences" Language="1033" Version="1.0.0.0"
+	<Product Id="CBBD78D1-5C9E-935D-14BA-1878B42AA70A" Name="MyFences" Language="1033" Version="1.0.0.2"
 			 Manufacturer="Nicancor" UpgradeCode="CBBD31D2-3C5E-432E-90BA-887FB42AA704">
 
 		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
@@ -9,6 +9,7 @@
 		<MediaTemplate />
 
 		<!-- Removed: <UIRef Id="WixUI_Minimal" /> -->
+		<UIRef Id="WixUI_Minimal" />
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
 		<Feature Id="ProductFeature" Title="MyFences Installation" Level="1">
@@ -25,7 +26,7 @@
 
 		<CustomAction Id="CreateScheduledTask"
 					  Directory="INSTALLFOLDER"
-			  		  ExeCommand='powershell.exe -ExecutionPolicy Bypass -NoProfile -File "[INSTALLFOLDER]RegisterAutoStart.ps1" -InstallFolder "[INSTALLFOLDER]"'
+			  		  ExeCommand='powershell.exe -ExecutionPolicy Bypass -NoProfile -File "[INSTALLFOLDER]RegisterAutoStart.ps1" -InstallFolder &quot;[INSTALLFOLDER]'
 			   		  Execute="deferred"
 					  Impersonate="no"
 					  Return="check" />
@@ -35,12 +36,12 @@
 					  Execute="deferred"
 					  Impersonate="no"
 					  Return="check"
-					  ExeCommand='powershell.exe -ExecutionPolicy Bypass -NoProfile -Command "[INSTALLFOLDER]UnregisterAutoStart.ps1"' />
+					  ExeCommand='powershell.exe -ExecutionPolicy Bypass -NoProfile -File "[INSTALLFOLDER]UnregisterAutoStart.ps1"' />
 
 		<InstallExecuteSequence>
 			<Custom Action="CreateScheduledTask" After="InstallExecute">NOT REMOVE</Custom>
 			<Custom Action="LaunchApplication" After="InstallExecute">NOT REMOVE</Custom>
-			<!--<Custom Action="RemoveScheduledTask" Before="RemoveFiles">REMOVE</Custom>-->
+			<Custom Action="RemoveScheduledTask" Before="RemoveFiles">REMOVE</Custom>
 		</InstallExecuteSequence>
 	</Product>
 
@@ -56,38 +57,18 @@
 	<!-- Components -->
 	<Fragment>
 		<DirectoryRef Id="INSTALLFOLDER">
-			<Component Id="MainExecutableComponent" Guid="*">
-				<File Id="MyFencesExe" Source="publish/MyFences.exe" KeyPath="yes" />
-			</Component>
-			<Component Id="Icon" Guid="220D7557-B800-45CF-BFE4-51DB6799D885">
-				<File Id="MyFencesExe2" Source="publish/Icon.ico" KeyPath="yes" />
-			</Component>
-			<Component Id="SystemEvents" Guid="E002070E-5F1E-4E2F-B92C-2391BB378A5D">
-				<File Id="MyFencesExe3" Source="publish/Microsoft.Win32.SystemEvents.dll" KeyPath="yes" />
-			</Component>
-			<Component Id="MyFences.deps" Guid="B43B649A-F23A-4DE7-A03D-6E85B3EB9E92">
-				<File Id="MyFencesExe4" Source="publish/MyFences.deps.json" KeyPath="yes" />
-			</Component>
-			<Component Id="MyFences" Guid="EE7799EF-A52A-4AA6-BC37-BA7C25DCE950">
-				<File Id="MyFencesExe5" Source="publish/MyFences.dll" KeyPath="yes" />
-			</Component>
-			<Component Id="MyFences.runtimeconfig" Guid="6FC643E6-BA67-4938-8322-68FBF61BCE06">
-				<File Id="MyFencesExe6" Source="publish/MyFences.runtimeconfig.json" KeyPath="yes" />
-			</Component>
-			<Component Id="Newtonsoft.Json" Guid="455DFCC8-7FCE-4299-981F-ED378FA066BE">
-				<File Id="MyFencesExe7" Source="publish/Newtonsoft.Json.dll" KeyPath="yes" />
-			</Component>
-			<Component Id="System.Drawing.Common" Guid="4BEA8C83-D34D-486E-AA1B-A77A31CFE7D8">
-				<File Id="MyFencesExe8" Source="publish/System.Drawing.Common.dll" KeyPath="yes" />
-			</Component>
-			<Component Id="System.Private.Windows.Core" Guid="83B6EBBE-1C30-41F8-98CE-FB5F78F9E921">
-				<File Id="MyFencesExe9" Source="publish/System.Private.Windows.Core.dll" KeyPath="yes" />
-			</Component>
-			<Component Id="RegisterAutoStart" Guid="83B6EBBE-1C30-41F8-98CE-FB5F78F9E922">
-				<File Id="MyFencesExe10" Source="publish/scripts/RegisterAutoStart.ps1" KeyPath="yes" />
-			</Component>
-			<Component Id="UnregisterAutoStart" Guid="83B6EBBE-1C30-41F8-98CE-FB5F78F9E923">
-				<File Id="MyFencesExe11" Source="publish/scripts/UnregisterAutoStart.ps1" KeyPath="yes" />
+			<Component Id="MainExecutableComponent" Guid="B1D9C6D0-6E0E-4C94-B1E2-AAA1CBBB1111" KeyPath="yes">
+				<File Id="MyFencesExe" Source="publish/MyFences.exe"  />
+				<File Id="MyFencesExe2" Source="publish/Icon.ico"/>
+				<File Id="MyFencesExe3" Source="publish/Microsoft.Win32.SystemEvents.dll"/>
+				<File Id="MyFencesExe4" Source="publish/MyFences.deps.json"/>
+				<File Id="MyFencesExe5" Source="publish/MyFences.dll"/>
+				<File Id="MyFencesExe6" Source="publish/MyFences.runtimeconfig.json"/>
+				<File Id="MyFencesExe7" Source="publish/Newtonsoft.Json.dll"/>
+				<File Id="MyFencesExe8" Source="publish/System.Drawing.Common.dll"/>
+				<File Id="MyFencesExe9" Source="publish/System.Private.Windows.Core.dll"/>
+				<File Id="MyFencesExe10" Source="publish/scripts/RegisterAutoStart.ps1"/>
+				<File Id="MyFencesExe11" Source="publish/scripts/UnregisterAutoStart.ps1"/>
 			</Component>
 
 			<!-- Desktop context menu -->
@@ -104,51 +85,7 @@
 
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
 			<ComponentRef Id="MainExecutableComponent" />
-			<ComponentRef Id="Icon" />
-			<ComponentRef Id="SystemEvents" />
-			<ComponentRef Id="MyFences.deps" />
-			<ComponentRef Id="MyFences" />
-			<ComponentRef Id="MyFences.runtimeconfig" />
-			<ComponentRef Id="Newtonsoft.Json" />
-			<ComponentRef Id="System.Drawing.Common" />
-			<ComponentRef Id="System.Private.Windows.Core" />
-			<ComponentRef Id="RegisterAutoStart" />
-			<ComponentRef Id="UnregisterAutoStart" />
 			<ComponentRef Id="DesktopContextMenuComponent" />
 		</ComponentGroup>
 	</Fragment>
-
-	<!-- Custom UI sequence without EULA -->
-	<Fragment>
-		<UI Id="CustomInstallUI">
-			<DialogRef Id="WelcomeDlg" />
-			<DialogRef Id="InstallDirDlg" />
-			<DialogRef Id="ProgressDlg" />
-			<DialogRef Id="ExitDialog" />
-
-			<Publish Dialog="WelcomeDlg"
-					 Control="Next"
-					 Event="NewDialog"
-					 Value="InstallDirDlg">1</Publish>
-
-			<Publish Dialog="InstallDirDlg"
-					 Control="Back"
-					 Event="NewDialog"
-					 Value="WelcomeDlg">1</Publish>
-			<Publish Dialog="InstallDirDlg"
-					 Control="Next"
-					 Event="NewDialog"
-					 Value="ProgressDlg">1</Publish>
-
-			<Publish Dialog="ProgressDlg"
-					 Control="Back"
-					 Event="NewDialog"
-					 Value="InstallDirDlg">1</Publish>
-			<Publish Dialog="ProgressDlg"
-					 Control="Next"
-					 Event="NewDialog"
-					 Value="ExitDialog">1</Publish>
-		</UI>
-	</Fragment>
-
 </Wix>
